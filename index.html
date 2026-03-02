@@ -1,12 +1,2896 @@
-<!DOCTYPE html>
-<html lang="en">
+
+<!doctype html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Index Page</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retro Team Battle 3D</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap  ");
+    :root {
+      --line: #8bf7ff;
+      --bg1: #091426;
+      --bg2: #1c355e;
+      --hud: rgba(8, 16, 31, 0.82);
+      --text: #e7f5ff;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; overflow: hidden; }
+    body {
+      font-family: "VT323", monospace;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 12%, #2d4f8b 0%, transparent 35%),
+        radial-gradient(circle at 80% 10%, #315a9d 0%, transparent 32%),
+        linear-gradient(140deg, var(--bg1), var(--bg2));
+      display: grid;
+      place-items: center;
+      padding: 10px;
+    }
+    .app {
+      width: min(1160px, 100%);
+      border: 3px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(165deg, rgba(10, 20, 40, 0.9), rgba(7, 14, 27, 0.95));
+      box-shadow: 0 0 0 2px rgba(255, 225, 137, 0.2), 0 22px 40px rgba(0, 0, 0, 0.45);
+      padding: 10px;
+      position: relative;
+    }
+    #wrap {
+      position: relative;
+      border: 2px solid rgba(139, 247, 255, 0.35);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #050912;
+    }
+    canvas {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      background: #050912;
+    }
+    .hud {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 8px;
+      padding: 8px;
+    }
+    .top {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .box {
+      background: var(--hud);
+      border: 2px solid rgba(139, 247, 255, 0.45);
+      border-radius: 8px;
+      min-width: 110px;
+      padding: 5px 7px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    }
+    .box b {
+      display: block;
+      font-family: "Press Start 2P", monospace;
+      font-size: 9px;
+      line-height: 1.3;
+      margin-bottom: 2px;
+    }
+    .box span {
+      display: block;
+      font-size: clamp(22px, 2.1vw, 30px);
+      line-height: 0.95;
+    }
+    #feed {
+      align-self: end;
+      justify-self: start;
+      background: rgba(9, 15, 27, 0.7);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      min-height: 60px;
+      width: min(520px, 70vw);
+      padding: 6px 8px;
+      font-size: clamp(20px, 2.3vw, 28px);
+      line-height: 1.03;
+      color: #ffe6a6;
+      overflow: hidden;
+    }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, rgba(4, 7, 12, 0.6), rgba(3, 6, 10, 0.84));
+      z-index: 10;
+      padding: 14px;
+    }
+    .overlay.hidden { display: none; }
+    .card {
+      width: min(840px, 100%);
+      border: 3px solid rgba(139, 247, 255, 0.7);
+      border-radius: 12px;
+      background: linear-gradient(160deg, rgba(10, 20, 40, 0.95), rgba(7, 13, 24, 0.97));
+      padding: 14px;
+      box-shadow: 0 16px 35px rgba(0, 0, 0, 0.5);
+    }
+    h1, h2 {
+      margin: 0;
+      font-family: "Press Start 2P", monospace;
+      font-size: clamp(15px, 2.2vw, 25px);
+      line-height: 1.35;
+      color: #fff7d1;
+    }
+    .sub {
+      margin: 8px 0 0;
+      font-size: clamp(23px, 2.7vw, 33px);
+      color: #d7ecff;
+      line-height: 1.08;
+    }
+    .grid {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .modeRow {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(140px, 1fr));
+      gap: 8px;
+    }
+    .modeBtn {
+      text-align: center;
+      font-size: 9px;
+      line-height: 1.2;
+      padding: 9px 8px;
+      background: linear-gradient(155deg, #1a3a73, #0f2449);
+    }
+    .modeBtn small {
+      margin-top: 5px;
+      font-size: clamp(18px, 2vw, 24px);
+    }
+    .modeBtn.active {
+      border-color: rgba(255, 207, 99, 0.86);
+      background: linear-gradient(155deg, #614013, #36240b);
+      color: #fff3d0;
+      filter: brightness(1.08);
+    }
+    button {
+      border: 2px solid rgba(139, 247, 255, 0.6);
+      border-radius: 10px;
+      background: linear-gradient(150deg, #163364, #0a1d3d);
+      color: #edf8ff;
+      font-family: "Press Start 2P", monospace;
+      font-size: 10px;
+      line-height: 1.3;
+      text-align: left;
+      padding: 11px;
+      cursor: pointer;
+      transition: transform 120ms ease, filter 120ms ease;
+    }
+    button:hover { transform: translateY(-1px); filter: brightness(1.1); }
+    button small {
+      display: block;
+      margin-top: 7px;
+      font-family: "VT323", monospace;
+      font-size: clamp(21px, 2.3vw, 28px);
+      line-height: 1.05;
+    }
+    .hot {
+      border-color: rgba(255, 90, 90, 0.72);
+      background: linear-gradient(150deg, #611d24, #310f14);
+    }
+    .info {
+      margin-top: 11px;
+      font-size: clamp(20px, 2.2vw, 29px);
+      line-height: 1.12;
+      color: #c5e3ff;
+    }
+    .row { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+    #retry { min-width: 200px; text-align: center; }
+    #menuBack { min-width: 170px; text-align: center; }
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr; }
+      .modeRow { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-    <h1>Welcome to the Index Page</h1>
-    <p>hola</p>
+  <main class="app">
+    <section id="wrap">
+      <canvas id="game" width="960" height="540"></canvas>
+      <div class="hud">
+        <div class="top">
+          <div class="box"><b>SALUD</b><span id="hp">0</span></div>
+          <div class="box"><b>MUNICION</b><span id="ammo">0</span></div>
+          <div class="box"><b>MARCADOR</b><span id="score">TU 0 | LIDER 0</span></div>
+          <div class="box"><b>TIEMPO</b><span id="time">00:00</span></div>
+          <div class="box"><b>MODO</b><span id="modeHud">FFA</span></div>
+          <div class="box"><b>DIFICULTAD</b><span id="dif">---</span></div>
+          <div class="box"><b>TU K/D</b><span id="kd">0/0</span></div>
+          <div class="box"><b>IA</b><span id="ai">0%</span></div>
+        </div>
+        <div></div>
+        <div id="feed"></div>
+      </div>
+
+      <div id="menu" class="overlay">
+        <article class="card">
+          <h1>RETRO COMBAT 3D</h1>
+          <p class="sub">Estilo Doom + bots tacticos + varios modos de juego</p>
+          <div class="modeRow">
+            <button type="button" class="modeBtn active" data-mode="ffa">
+              FFA
+              <small>Todos contra todos.</small>
+            </button>
+            <button type="button" class="modeBtn" data-mode="teams">
+              EQUIPOS
+              <small>Azules vs rojos.</small>
+            </button>
+            <button type="button" class="modeBtn" data-mode="vip">
+              VIP
+              <small>Defiende al VIP dorado.</small>
+            </button>
+          </div>
+          <p class="info" id="modeInfo">Modo actual: FFA (todos contra todos).</p>
+          <div class="grid">
+            <button type="button" data-dif="baja">
+              BAJA
+              <small>Combate relajado y tactico.</small>
+            </button>
+            <button type="button" data-dif="media">
+              MEDIA
+              <small>Ritmo intenso y combate dinamico.</small>
+            </button>
+            <button type="button" class="hot" data-dif="extrema">
+              EXTREMA
+              <small>Modo brutal con IA agresiva.</small>
+            </button>
+          </div>
+          <p class="info">WASD mover, flechas o mouse para girar, click/ESPACIO disparar, click derecho apuntar, R recargar, Shift correr, C cubrirse (en cobertura: click derecho para asomarte).</p>
+        </article>
+      </div>
+
+      <div id="end" class="overlay hidden">
+        <article class="card">
+          <h2 id="endTitle">FIN</h2>
+          <p class="sub" id="endSub">---</p>
+          <p class="info" id="endInfo">---</p>
+          <div class="row">
+            <button type="button" id="retry">JUGAR MISMA DIFICULTAD</button>
+            <button type="button" id="menuBack">VOLVER AL MENU</button>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const cv = document.getElementById("game");
+      const cx = cv.getContext("2d", { alpha: false });
+
+      const low = document.createElement("canvas");
+      low.width = 480;
+      low.height = 270;
+      const gx = low.getContext("2d", { alpha: false });
+
+      const disableSmoothing = (ctx) => {
+        if (!ctx) return;
+        ctx.imageSmoothingEnabled = false;
+        if ("mozImageSmoothingEnabled" in ctx) ctx.mozImageSmoothingEnabled = false;
+        if ("webkitImageSmoothingEnabled" in ctx) ctx.webkitImageSmoothingEnabled = false;
+        if ("msImageSmoothingEnabled" in ctx) ctx.msImageSmoothingEnabled = false;
+      };
+      disableSmoothing(cx);
+      disableSmoothing(gx);
+      cv.style.imageRendering = "pixelated";
+
+      const el = {
+        hp: document.getElementById("hp"),
+        ammo: document.getElementById("ammo"),
+        score: document.getElementById("score"),
+        time: document.getElementById("time"),
+        modeHud: document.getElementById("modeHud"),
+        modeInfo: document.getElementById("modeInfo"),
+        dif: document.getElementById("dif"),
+        kd: document.getElementById("kd"),
+        ai: document.getElementById("ai"),
+        feed: document.getElementById("feed"),
+        menu: document.getElementById("menu"),
+        end: document.getElementById("end"),
+        endTitle: document.getElementById("endTitle"),
+        endSub: document.getElementById("endSub"),
+        endInfo: document.getElementById("endInfo")
+      };
+
+      const W = cv.width;
+      const H = cv.height;
+      const RW = low.width;
+      const RH = low.height;
+      const FOV = Math.PI / 3;
+      const MAXD = 22;
+      const TAU = Math.PI * 2;
+
+      const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+      const lerp = (a, b, t) => a + (b - a) * t;
+      const rnd = (a, b) => a + Math.random() * (b - a);
+      const wrap = (a) => {
+        while (a <= -Math.PI) a += TAU;
+        while (a > Math.PI) a -= TAU;
+        return a;
+      };
+      const adiff = (a, b) => wrap(a - b);
+
+      const mapRows = [
+        "11111111111111111111",
+        "10000000002000000001",
+        "10111101111101111001",
+        "10000100000001000001",
+        "10110101101101011101",
+        "10010101000101000101",
+        "11000101011101010001",
+        "10000100010000010001",
+        "10111111010111110101",
+        "10000001010100000101",
+        "10111001000101110101",
+        "10001001111101000101",
+        "10101000000001010101",
+        "10101111101111010101",
+        "10000000100000010101",
+        "10111110101111110101",
+        "10000000100000000101",
+        "10111110111111110101",
+        "10000000000000000001",
+        "11111111111111111111"
+      ];
+      const map = mapRows.map((r) => r.split("").map(Number));
+      const MH = map.length;
+      const MW = map[0].length;
+
+      const blueSpawns = [[2.5,2.4],[2.8,6.2],[3.1,10.4],[2.7,14.6],[3.8,17.2],[5.2,3.4]];
+      const redSpawns = [[17.2,2.6],[16.9,6.4],[17.1,10.5],[16.8,14.5],[16.6,17.1],[15.3,4.2],[15.6,12.7]];
+      const allSpawns = [...blueSpawns, ...redSpawns];
+
+      const presets = {
+        baja: {
+          label: "BAJA", playerHp: 130, time: 420, limit: 32, bots: 9, learn: 0.08,
+          bot: { speed: 0.85, aim: 0.16, dmg: 7, fire: 1.15, agg: 0.28, strafe: 0.12, react: 0.85 }
+        },
+        media: {
+          label: "MEDIA", playerHp: 100, time: 420, limit: 40, bots: 12, learn: 0.16,
+          bot: { speed: 1.18, aim: 0.48, dmg: 16, fire: 0.44, agg: 0.64, strafe: 0.34, react: 0.42 }
+        },
+        extrema: {
+          label: "EXTREMA", playerHp: 82, time: 360, limit: 48, bots: 16, learn: 0.30,
+          bot: { speed: 1.62, aim: 0.78, dmg: 28, fire: 0.21, agg: 0.92, strafe: 0.62, react: 0.16 }
+        }
+      };
+      const gameModes = {
+        ffa: { label: "FFA", desc: "Todos contra todos." },
+        teams: { label: "EQUIPOS", desc: "Azules vs rojos." },
+        vip: { label: "VIP", desc: "Defiende al VIP dorado." }
+      };
+
+      const keys = Object.create(null);
+      const mouse = { down: false, ads: false };
+
+      const player = {
+        id: 0, team: "blue", x: 2.5, y: 10.5, a: 0, r: 0.24,
+        speed: 3.15, turn: 2.5, maxHp: 100, hp: 100, alive: true, respawn: 0,
+        clipSize: 24, clip: 24, reload: 0, fireCd: 0,
+        kills: 0, deaths: 0, streak: 0, recoil: 0, adsBlend: 0,
+        vx: 0, vy: 0, sprintBlend: 0,
+        prevA: 0, turnVel: 0, weaponLagX: 0, weaponLagY: 0, weaponLagR: 0,
+        cover: false, coverBlend: 0, coverNX: 0, coverNY: 0, coverPeek: 0
+      };
+
+      const memory = (() => {
+        try {
+          const m = JSON.parse(localStorage.getItem("retro_ai_memory_v2") || "null");
+          if (!m) throw new Error("empty");
+          return {
+            aim: clamp(Number(m.aim) || 0.1, 0, 1),
+            agg: clamp(Number(m.agg) || 0.1, 0, 1),
+            strafe: clamp(Number(m.strafe) || 0.08, 0, 1),
+            react: clamp(Number(m.react) || 0.08, 0, 1)
+          };
+        } catch {
+          return { aim: 0.1, agg: 0.1, strafe: 0.08, react: 0.08 };
+        }
+      })();
+
+      const S = {
+        mode: "menu", diff: "media", gameMode: "ffa", time: 0, limit: 0, elapsed: 0,
+        bots: [], feed: [], depth: new Float32Array(RW), flash: 0, muzzle: 0, hitFx: 0, shotReq: 0, learnT: 0,
+        tracers: [], sparks: [],
+        teamScores: { blue: 0, red: 0 },
+        vipId: -1,
+        endReason: "",
+        style: { shots:0, hits:0, close:0, fwd:0, strafe:0, dmgOut:0, dmgIn:0, kills:0 },
+        memory
+      };
+
+      const wallColor = { 1:[82,137,155], 2:[125,86,72], 3:[104,128,84] };
+      const roleRange = { assault: 4.8, flanker: 5.7, anchor: 6.6, hunter: 4.3 };
+      let botSeed = 1;
+      let roleCycle = 0;
+      const tacticalNodes = [];
+
+      buildTacticalNodes();
+      bind();
+      render();
+      hud();
+      requestAnimationFrame(loop);
+
+      function bind() {
+        document.querySelectorAll("[data-dif]").forEach((b) => {
+          b.addEventListener("click", () => start(b.dataset.dif));
+        });
+        document.querySelectorAll("[data-mode]").forEach((b) => {
+          b.addEventListener("click", () => setGameMode(b.dataset.mode));
+        });
+        document.getElementById("retry").addEventListener("click", () => start(S.diff));
+        document.getElementById("menuBack").addEventListener("click", menu);
+        setGameMode(S.gameMode);
+
+        window.addEventListener("keydown", (e) => {
+          keys[e.code] = true;
+          if (e.code === "Space") { e.preventDefault(); S.shotReq = 0.2; }
+          if (e.code === "KeyR") reload();
+          if (e.code === "KeyC" && !e.repeat && S.mode === "play") {
+            e.preventDefault();
+            toggleCover();
+          }
+        });
+        window.addEventListener("keyup", (e) => { keys[e.code] = false; });
+        window.addEventListener("blur", () => {
+          Object.keys(keys).forEach((k) => { keys[k] = false; });
+          mouse.down = false;
+          mouse.ads = false;
+        });
+
+        cv.addEventListener("contextmenu", (e) => e.preventDefault());
+        cv.addEventListener("mousedown", (e) => {
+          if (e.button === 2) {
+            mouse.ads = true;
+          } else if (e.button === 0) {
+            mouse.down = true;
+          }
+          if (S.mode === "play") {
+            cv.requestPointerLock?.();
+            S.shotReq = 0.2;
+          }
+        });
+        window.addEventListener("mouseup", (e) => {
+          if (e.button === 2) mouse.ads = false;
+          if (e.button === 0) mouse.down = false;
+        });
+        window.addEventListener("mousemove", (e) => {
+          if (S.mode !== "play" || !player.alive) return;
+          if (document.pointerLockElement === cv) {
+            const sens = lerp(0.0028, 0.0017, player.adsBlend);
+            player.a = wrap(player.a + e.movementX * sens);
+          }
+        });
+      }
+
+      function modeLabel(mode = S.gameMode) {
+        return (gameModes[mode] || gameModes.ffa).label;
+      }
+
+      function setGameMode(mode) {
+        if (!gameModes[mode]) return;
+        S.gameMode = mode;
+        document.querySelectorAll("[data-mode]").forEach((b) => {
+          b.classList.toggle("active", b.dataset.mode === mode);
+        });
+        if (el.modeInfo) {
+          const g = gameModes[mode] || gameModes.ffa;
+          el.modeInfo.textContent = `Modo actual: ${g.label} (${g.desc})`;
+        }
+      }
+
+      function isEnemy(a, b) {
+        if (!a || !b || a.id === b.id) return false;
+        if (S.gameMode === "ffa") return true;
+        return a.team !== b.team;
+      }
+
+      function getVipBot() {
+        return S.bots.find((b) => b.id === S.vipId) || null;
+      }
+
+      function placeBotAtSpawn(b) {
+        const modeSpawn = S.gameMode === "ffa" ? "any" : b.team;
+        const s = spawn(modeSpawn);
+        b.x = s.x;
+        b.y = s.y;
+        b.goalX = s.x;
+        b.goalY = s.y;
+        b.lastSeenX = s.x;
+        b.lastSeenY = s.y;
+      }
+
+      function setupMatchMode() {
+        S.vipId = -1;
+        S.teamScores.blue = 0;
+        S.teamScores.red = 0;
+
+        for (const b of S.bots) {
+          b.team = "red";
+          b.isVip = false;
+          b.maxHp = 100;
+          b.hp = Math.min(b.hp, b.maxHp);
+          b.name = `BOT ${b.id}`;
+        }
+
+        if (S.gameMode === "ffa") return;
+
+        const shuffled = [...S.bots];
+        for (let i = shuffled.length - 1; i > 0; i -= 1) {
+          const j = (Math.random() * (i + 1)) | 0;
+          const t = shuffled[i];
+          shuffled[i] = shuffled[j];
+          shuffled[j] = t;
+        }
+
+        const blueCount = S.gameMode === "teams"
+          ? Math.max(2, Math.floor(S.bots.length * 0.46))
+          : Math.max(2, Math.floor(S.bots.length * 0.25));
+
+        for (let i = 0; i < blueCount && i < shuffled.length; i += 1) {
+          shuffled[i].team = "blue";
+        }
+
+        if (!S.bots.some((b) => b.team === "red")) {
+          S.bots[S.bots.length - 1].team = "red";
+        }
+
+        if (S.gameMode === "vip") {
+          const blueBots = S.bots.filter((b) => b.team === "blue");
+          const vip = blueBots[(Math.random() * blueBots.length) | 0] || S.bots[0];
+          vip.team = "blue";
+          vip.isVip = true;
+          vip.name = "VIP";
+          vip.role = "anchor";
+          vip.maxHp = 175;
+          vip.hp = vip.maxHp;
+          S.vipId = vip.id;
+          train(vip);
+        }
+
+        for (const b of S.bots) {
+          if (S.gameMode === "vip") {
+            if (b.isVip) b.name = "VIP";
+            else b.name = b.team === "blue" ? `ESCOLTA ${b.id}` : `ATACANTE ${b.id}`;
+          } else {
+            b.name = b.team === "blue" ? `AZUL ${b.id}` : `ROJO ${b.id}`;
+          }
+          placeBotAtSpawn(b);
+        }
+      }
+
+      function menu() {
+        S.mode = "menu";
+        el.menu.classList.remove("hidden");
+        el.end.classList.add("hidden");
+        document.exitPointerLock?.();
+        push(`Modo ${modeLabel()}: elige dificultad para iniciar.`);
+      }
+
+      function start(diff) {
+        const p = presets[diff] || presets.media;
+        S.mode = "play";
+        S.diff = diff;
+        S.time = p.time;
+        S.limit = p.limit;
+        S.endReason = "";
+        S.elapsed = 0;
+        S.flash = 0;
+        S.muzzle = 0;
+        S.hitFx = 0;
+        S.shotReq = 0;
+        S.learnT = 0;
+        S.tracers = [];
+        S.sparks = [];
+        S.feed = [];
+        S.bots = [];
+        botSeed = 1;
+        roleCycle = 0;
+        S.vipId = -1;
+        S.teamScores.blue = 0;
+        S.teamScores.red = 0;
+
+        S.style = { shots:0, hits:0, close:0, fwd:0, strafe:0, dmgOut:0, dmgIn:0, kills:0 };
+        player.team = "blue";
+
+        player.maxHp = p.playerHp;
+        player.hp = p.playerHp;
+        player.clip = player.clipSize;
+        player.reload = 0;
+        player.fireCd = 0;
+        player.alive = true;
+        player.respawn = 0;
+        player.kills = 0;
+        player.deaths = 0;
+        player.streak = 0;
+        player.recoil = 0;
+        player.adsBlend = 0;
+        player.vx = 0;
+        player.vy = 0;
+        player.sprintBlend = 0;
+        player.prevA = 0;
+        player.turnVel = 0;
+        player.weaponLagX = 0;
+        player.weaponLagY = 0;
+        player.weaponLagR = 0;
+        player.cover = false;
+        player.coverBlend = 0;
+        player.coverNX = 0;
+        player.coverNY = 0;
+        player.coverPeek = 0;
+        mouse.down = false;
+        mouse.ads = false;
+
+        const sp = spawn(S.gameMode === "ffa" ? "any" : "blue");
+        player.x = sp.x;
+        player.y = sp.y;
+        player.a = 0;
+        player.prevA = player.a;
+
+        for (let i = 0; i < p.bots; i += 1) S.bots.push(makeBot());
+        setupMatchMode();
+
+        el.menu.classList.add("hidden");
+        el.end.classList.add("hidden");
+
+        push(`Partida: ${modeLabel()} | ${p.label}`);
+        if (S.gameMode === "ffa") {
+          push("FFA activo: todos contra todos.");
+        } else if (S.gameMode === "teams") {
+          push("Modo equipos: AZUL contra ROJO.");
+        } else {
+          push("Modo VIP: protege al VIP dorado (estrella en minimapa).");
+        }
+      }
+
+      function finish(reason = S.endReason || "time") {
+        S.mode = "end";
+        S.endReason = reason;
+        document.exitPointerLock?.();
+
+        const power = Math.round(((S.memory.aim + S.memory.agg + S.memory.strafe + S.memory.react) / 4) * 100);
+        const modeName = modeLabel();
+
+        if (S.gameMode === "ffa") {
+          const table = ffaTable();
+          const top = table[0] || { name: "TU", kills: 0, isPlayer: true };
+          const rank = Math.max(1, table.findIndex((e) => e.isPlayer) + 1);
+          let title = top.isPlayer ? "VICTORIA" : `GANA ${top.name}`;
+          if (table.length <= 1) title = "FIN";
+          const podium = table
+            .slice(0, 3)
+            .map((e, i) => `#${i + 1} ${e.name} ${e.kills}`)
+            .join(" | ");
+
+          el.endTitle.textContent = title;
+          el.endSub.textContent = podium ? `Clasificacion: ${podium}` : "Clasificacion: ---";
+          el.endInfo.innerHTML = `Modo: <strong>${modeName}</strong><br>Tu posicion: <strong>#${rank}/${table.length}</strong><br>Tu K/D: <strong>${player.kills}/${player.deaths}</strong><br>Nivel de entrenamiento tactico: <strong>${power}%</strong><br>Dificultad: <strong>${presets[S.diff].label}</strong>`;
+        } else if (S.gameMode === "teams") {
+          const blue = S.teamScores.blue;
+          const red = S.teamScores.red;
+          let title = "EMPATE";
+          if (blue > red) title = "VICTORIA AZUL";
+          if (red > blue) title = "VICTORIA ROJA";
+          el.endTitle.textContent = title;
+          el.endSub.textContent = `Marcador final: AZUL ${blue} | ROJO ${red}`;
+          el.endInfo.innerHTML = `Modo: <strong>${modeName}</strong><br>Objetivo: <strong>${S.limit}</strong><br>Tu equipo: <strong>AZUL</strong><br>Tu K/D: <strong>${player.kills}/${player.deaths}</strong><br>Nivel de entrenamiento tactico: <strong>${power}%</strong><br>Dificultad: <strong>${presets[S.diff].label}</strong>`;
+        } else {
+          const blue = S.teamScores.blue;
+          const red = S.teamScores.red;
+          const vip = getVipBot();
+          const vipAlive = !!(vip && vip.alive);
+          const vipHp = vipAlive ? Math.max(0, Math.ceil(vip.hp)) : 0;
+          const defended = reason !== "vip_down" && vipAlive;
+          el.endTitle.textContent = defended ? "VIP PROTEGIDO" : "VIP ELIMINADO";
+          el.endSub.textContent = `Marcador: AZUL ${blue} | ROJO ${red} | VIP ${vipAlive ? "VIVO" : "CAIDO"}`;
+          el.endInfo.innerHTML = `Modo: <strong>${modeName}</strong><br>Estado VIP: <strong>${vipAlive ? `VIVO (${vipHp} HP)` : "CAIDO"}</strong><br>Objetivo: <strong>Defender al VIP</strong><br>Tu K/D: <strong>${player.kills}/${player.deaths}</strong><br>Nivel de entrenamiento tactico: <strong>${power}%</strong><br>Dificultad: <strong>${presets[S.diff].label}</strong>`;
+        }
+
+        el.end.classList.remove("hidden");
+        saveMemory();
+      }
+
+      function push(msg) {
+        S.feed.unshift({ msg, t: 4 });
+        if (S.feed.length > 6) S.feed.length = 6;
+      }
+
+      function wall(x, y) {
+        const gx = Math.floor(x), gy = Math.floor(y);
+        if (gx < 0 || gy < 0 || gx >= MW || gy >= MH) return 1;
+        return map[gy][gx];
+      }
+
+      function blocked(x, y) {
+        return wall(x, y) > 0;
+      }
+
+      function free(x, y, r = 0.23) {
+        return (
+          !blocked(x - r, y - r) &&
+          !blocked(x + r, y - r) &&
+          !blocked(x - r, y + r) &&
+          !blocked(x + r, y + r) &&
+          !blocked(x + r, y) &&
+          !blocked(x - r, y) &&
+          !blocked(x, y + r) &&
+          !blocked(x, y - r)
+        );
+      }
+
+      function resolveStuck(o, r) {
+        if (free(o.x, o.y, r)) return;
+
+        const ox = o.x;
+        const oy = o.y;
+        const angStep = Math.PI / 8;
+
+        for (let dist = 0.02; dist <= 0.32; dist += 0.02) {
+          for (let a = 0; a < TAU; a += angStep) {
+            const tx = ox + Math.cos(a) * dist;
+            const ty = oy + Math.sin(a) * dist;
+            if (free(tx, ty, r)) {
+              // Evita "teletransporte" a traves de muros al desatascar.
+              if (dist > 0.1 && !sight(ox, oy, tx, ty)) continue;
+              o.x = tx;
+              o.y = ty;
+              return;
+            }
+          }
+        }
+      }
+
+      function move(o, dx, dy) {
+        const r = o.r || 0.22;
+        const dist = Math.hypot(dx, dy);
+        const steps = Math.max(1, Math.ceil(dist / 0.055));
+        const sx = dx / steps;
+        const sy = dy / steps;
+
+        let hitX = false;
+        let hitY = false;
+
+        for (let i = 0; i < steps; i += 1) {
+          const nx = o.x + sx;
+          if (free(nx, o.y, r)) {
+            o.x = nx;
+          } else {
+            hitX = true;
+          }
+
+          const ny = o.y + sy;
+          if (free(o.x, ny, r)) {
+            o.y = ny;
+          } else {
+            hitY = true;
+          }
+        }
+
+        // Nudge suave para salir de esquinas donde ambos ejes quedan bloqueados.
+        if (hitX && hitY && o.id === 0) {
+          const nx = Math.sign(dx) * 0.015;
+          const ny = Math.sign(dy) * 0.015;
+          if (nx && free(o.x + nx, o.y, r)) o.x += nx;
+          if (ny && free(o.x, o.y + ny, r)) o.y += ny;
+        }
+
+        if (hitX && hitY && o.id !== 0 && dist > 0.0001) {
+          const dirX = dx / dist;
+          const dirY = dy / dist;
+          const sideStep = 0.06;
+          const lx = o.x - dirY * sideStep;
+          const ly = o.y + dirX * sideStep;
+          const rx = o.x + dirY * sideStep;
+          const ry = o.y - dirX * sideStep;
+          const canL = free(lx, ly, r);
+          const canR = free(rx, ry, r);
+          if (canL || canR) {
+            if (canL && canR) {
+              const leftWall = coverScore(lx, ly);
+              const rightWall = coverScore(rx, ry);
+              if (leftWall <= rightWall) {
+                o.x = lx;
+                o.y = ly;
+              } else {
+                o.x = rx;
+                o.y = ry;
+              }
+            } else if (canL) {
+              o.x = lx;
+              o.y = ly;
+            } else {
+              o.x = rx;
+              o.y = ry;
+            }
+          }
+        }
+
+        resolveStuck(o, r);
+      }
+
+      function sight(x1, y1, x2, y2) {
+        const dx = x2 - x1, dy = y2 - y1;
+        const d = Math.hypot(dx, dy);
+        const n = Math.max(2, Math.ceil(d / 0.08));
+        for (let i = 1; i < n; i += 1) {
+          const t = i / n;
+          if (wall(x1 + dx * t, y1 + dy * t)) return false;
+        }
+        return true;
+      }
+
+      function cast(px, py, a) {
+        const s = Math.sin(a), c = Math.cos(a);
+        let d = 0;
+        while (d < MAXD) {
+          const x = px + c * d, y = py + s * d;
+          const t = wall(x, y);
+          if (t > 0) return { d, t, x, y };
+          d += 0.03;
+        }
+        return { d: MAXD, t: 1, x: px + c * MAXD, y: py + s * MAXD };
+      }
+
+      function nearestCoverWall(x, y, maxDist = 0.9, prefNX = 0, prefNY = 0, prefBias = 0) {
+        let best = null;
+        const prefLen = Math.hypot(prefNX, prefNY);
+        let pnx = prefNX;
+        let pny = prefNY;
+        if (prefLen > 0.0001) {
+          pnx /= prefLen;
+          pny /= prefLen;
+        } else {
+          pnx = 0;
+          pny = 0;
+        }
+        const stepA = Math.PI / 16;
+        for (let a = 0; a < TAU; a += stepA) {
+          const c = Math.cos(a);
+          const s = Math.sin(a);
+          for (let d = 0.12; d <= maxDist; d += 0.05) {
+            if (wall(x + c * d, y + s * d) <= 0) continue;
+            const nx = -c;
+            const ny = -s;
+            const safeX = x + nx * 0.06;
+            const safeY = y + ny * 0.06;
+            if (!free(safeX, safeY, player.r)) break;
+            const align = pnx || pny ? (nx * pnx + ny * pny) : 0;
+            const score = d + (1 - align) * prefBias;
+            if (!best || score < best.score) best = { d, nx, ny, score };
+            break;
+          }
+        }
+        return best;
+      }
+
+      function leaveCover(silent = false) {
+        if (!player.cover) return;
+        player.cover = false;
+        player.coverPeek = 0;
+        if (!silent) push("Sales de cobertura.");
+      }
+
+      function tryEnterCover() {
+        if (!player.alive || S.mode !== "play") return;
+        const c = nearestCoverWall(player.x, player.y, 0.92, -Math.cos(player.a), -Math.sin(player.a), 0.28);
+        if (!c || c.d > 0.72) {
+          push("No hay pared cerca para cubrirte.");
+          return;
+        }
+        player.cover = true;
+        player.coverNX = c.nx;
+        player.coverNY = c.ny;
+        player.coverPeek = 0;
+        player.sprintBlend = 0;
+        push("Cubierto.");
+      }
+
+      function toggleCover() {
+        if (player.cover) leaveCover();
+        else tryEnterCover();
+      }
+
+      function spawn(team = "any") {
+        const arr = team === "blue"
+          ? blueSpawns
+          : team === "red"
+            ? redSpawns
+            : allSpawns;
+        for (let i = 0; i < 24; i += 1) {
+          const b = arr[(Math.random() * arr.length) | 0];
+          const x = b[0] + rnd(-0.25, 0.25);
+          const y = b[1] + rnd(-0.25, 0.25);
+          if (free(x, y, 0.22)) return { x, y };
+        }
+        return { x: arr[0][0], y: arr[0][1] };
+      }
+
+      function laneOf(y) {
+        return clamp((y / MH * 3) | 0, 0, 2);
+      }
+
+      function coverScore(x, y) {
+        const probes = [
+          [0.74, 0, 1], [-0.74, 0, 1], [0, 0.74, 1], [0, -0.74, 1],
+          [0.56, 0.56, 0.65], [0.56, -0.56, 0.65], [-0.56, 0.56, 0.65], [-0.56, -0.56, 0.65]
+        ];
+        let score = 0;
+        for (const p of probes) {
+          if (wall(x + p[0], y + p[1]) > 0) score += p[2];
+        }
+        return score;
+      }
+
+      function wallRepel(x, y, radius = 0.68) {
+        let rx = 0;
+        let ry = 0;
+        let hits = 0;
+        const stepA = Math.PI / 8;
+
+        for (let a = 0; a < TAU; a += stepA) {
+          const c = Math.cos(a);
+          const s = Math.sin(a);
+          const near = wall(x + c * radius * 0.65, y + s * radius * 0.65) > 0;
+          const far = wall(x + c * radius, y + s * radius) > 0;
+          if (!near && !far) continue;
+          const w = near ? 1 : 0.55;
+          rx -= c * w;
+          ry -= s * w;
+          hits += w;
+        }
+
+        if (hits <= 0.001) return { x: 0, y: 0, m: 0 };
+        const m = Math.hypot(rx, ry) || 1;
+        return { x: rx / m, y: ry / m, m: clamp(hits / 5.8, 0, 1) };
+      }
+
+      function buildTacticalNodes() {
+        tacticalNodes.length = 0;
+        for (let gy = 1; gy < MH - 1; gy += 1) {
+          for (let gxCell = 1; gxCell < MW - 1; gxCell += 1) {
+            if (map[gy][gxCell] !== 0) continue;
+            const x = gxCell + 0.5;
+            const y = gy + 0.5;
+            if (!free(x, y, 0.2)) continue;
+            const cover = coverScore(x, y);
+            if (cover < 1.2) continue;
+            tacticalNodes.push({ x, y, cover, lane: laneOf(y) });
+          }
+        }
+      }
+
+      function pickRole() {
+        const r = ((roleCycle++ % 8) / 8 + Math.random() * 0.24);
+        if (r < 0.22) return "anchor";
+        if (r < 0.5) return "flanker";
+        if (r < 0.82) return "assault";
+        return "hunter";
+      }
+
+      function teammateSeparation(b, radius = 1.2) {
+        let x = 0;
+        let y = 0;
+        const rr = radius * radius;
+        for (const o of S.bots) {
+          if (!o.alive || o.id === b.id) continue;
+          const dx = b.x - o.x;
+          const dy = b.y - o.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 <= 0.00001 || d2 > rr) continue;
+          const d = Math.sqrt(d2);
+          const f = (radius - d) / radius;
+          x += (dx / d) * f;
+          y += (dy / d) * f;
+        }
+        return { x, y };
+      }
+
+      function chooseTacticalNode(b, mode, target = null) {
+        let best = null;
+        let score = Infinity;
+        const refA = target ? Math.atan2(b.y - target.y, b.x - target.x) : b.a;
+
+        for (const n of tacticalNodes) {
+          const db = Math.hypot(n.x - b.x, n.y - b.y);
+          if (db < 0.75 || db > 12) continue;
+          if (!sight(b.x, b.y, n.x, n.y)) continue;
+
+          let s = db * 0.9 + Math.random() * 0.3 + Math.abs(n.lane - b.lane) * 0.38;
+
+          if (mode === "patrol") {
+            s += Math.abs(db - 4.9) * 0.52;
+            s -= n.cover * 0.48;
+          } else if (target && mode === "cover") {
+            const dt = Math.hypot(n.x - target.x, n.y - target.y);
+            const hasLOS = sight(n.x, n.y, target.x, target.y);
+            s += Math.abs(dt - 5.1) * 0.72;
+            s -= n.cover * 1.55;
+            if (hasLOS) s += 0.85;
+            if (dt < 2.2) s += 1.3;
+          } else if (target && mode === "flank") {
+            const dt = Math.hypot(n.x - target.x, n.y - target.y);
+            if (dt < 2.4 || dt > 8.8) continue;
+            const na = Math.atan2(n.y - target.y, n.x - target.x);
+            const side = Math.abs(Math.sin(na - refA));
+            const hasLOS = sight(n.x, n.y, target.x, target.y);
+            s += Math.abs(dt - 4.7) * 0.66;
+            s -= side * 2.2;
+            s -= n.cover * 0.6;
+            if (!hasLOS) s -= 0.5;
+          } else if (target && mode === "hunt") {
+            const dt = Math.hypot(n.x - target.x, n.y - target.y);
+            s += dt * 0.46;
+            s -= n.cover * 0.34;
+            if (!sight(n.x, n.y, target.x, target.y)) s -= 0.22;
+          }
+
+          if (s < score) {
+            score = s;
+            best = n;
+          }
+        }
+        return best;
+      }
+
+      function randomLaneGoal(b) {
+        const laneMid = ((b.lane + 0.5) / 3) * MH;
+        for (let i = 0; i < 28; i += 1) {
+          const x = rnd(1.2, MW - 1.2);
+          const y = clamp(laneMid + rnd(-3.8, 3.8), 1.2, MH - 1.2);
+          if (free(x, y, 0.22) && sight(b.x, b.y, x, y)) {
+            return { x, y, lane: laneOf(y) };
+          }
+        }
+        return null;
+      }
+
+      function setBotGoal(b, x, y, state, ttl) {
+        b.goalX = x;
+        b.goalY = y;
+        b.state = state;
+        b.goalT = ttl;
+      }
+
+      function replanBot(b, t, vis, dist) {
+        if (S.gameMode === "vip" && b.isVip) {
+          const danger = t && vis && dist < 5.2;
+          const vipCover = chooseTacticalNode(b, "cover", t || player) || chooseTacticalNode(b, "patrol");
+          if (danger && vipCover) {
+            b.lane = vipCover.lane;
+            setBotGoal(b, vipCover.x, vipCover.y, "fallback", rnd(0.8, 1.5));
+            b.planT = rnd(0.18, 0.42);
+            return;
+          }
+          if (player.alive) {
+            const dx = player.x - b.x;
+            const dy = player.y - b.y;
+            const dd = Math.hypot(dx, dy);
+            if (dd > 2.9) {
+              const followA = Math.atan2(dy, dx);
+              const fx = clamp(player.x - Math.cos(followA) * rnd(1.2, 2.2), 1.1, MW - 1.1);
+              const fy = clamp(player.y - Math.sin(followA) * rnd(1.2, 2.2), 1.1, MH - 1.1);
+              if (free(fx, fy, 0.22) && sight(b.x, b.y, fx, fy)) {
+                setBotGoal(b, fx, fy, "escort", rnd(0.9, 1.6));
+                b.lane = laneOf(fy);
+                b.planT = rnd(0.24, 0.52);
+                return;
+              }
+            }
+          }
+          if (vipCover) {
+            b.lane = vipCover.lane;
+            setBotGoal(b, vipCover.x, vipCover.y, "hold", rnd(0.9, 1.8));
+          }
+          b.planT = rnd(0.26, 0.58);
+          return;
+        }
+
+        const lowHp = b.hp < b.maxHp * (0.34 - b.sk.agg * 0.06);
+        const pressured = vis && dist < 2.6;
+
+        if (!t) {
+          const patrol = chooseTacticalNode(b, "patrol") || randomLaneGoal(b);
+          if (patrol) {
+            b.lane = patrol.lane;
+            setBotGoal(b, patrol.x, patrol.y, "patrol", rnd(1.6, 3.2));
+          }
+          b.planT = rnd(0.45, 1.15);
+          return;
+        }
+
+        if (lowHp || pressured) {
+          const cover = chooseTacticalNode(b, "cover", t) || chooseTacticalNode(b, "patrol");
+          if (cover) {
+            b.lane = cover.lane;
+            setBotGoal(b, cover.x, cover.y, "fallback", rnd(0.9, 1.8));
+          }
+          b.planT = rnd(0.25, 0.7);
+          b.suppress = 0.28 + rnd(0.08, 0.25);
+          return;
+        }
+
+        if (!vis) {
+          if (b.lastSeenT > 0.08) {
+            const huntAngle = Math.atan2(b.lastSeenY - b.y, b.lastSeenX - b.x);
+            const hx = clamp(
+              b.lastSeenX + Math.cos(huntAngle + b.flankSide * 1.02) * rnd(0.7, 1.9),
+              1.1,
+              MW - 1.1
+            );
+            const hy = clamp(
+              b.lastSeenY + Math.sin(huntAngle + b.flankSide * 1.02) * rnd(0.7, 1.9),
+              1.1,
+              MH - 1.1
+            );
+            if (free(hx, hy, 0.22) && sight(b.x, b.y, hx, hy)) {
+              setBotGoal(b, hx, hy, "hunt", rnd(0.9, 1.8));
+              b.lane = laneOf(hy);
+            } else {
+              const hunt = chooseTacticalNode(b, "hunt", { x: b.lastSeenX, y: b.lastSeenY }) || chooseTacticalNode(b, "flank", t);
+              if (hunt) {
+                b.lane = hunt.lane;
+                setBotGoal(b, hunt.x, hunt.y, "hunt", rnd(0.9, 1.8));
+              }
+            }
+          } else {
+            const mode = b.role === "flanker" ? "flank" : "patrol";
+            const roam = chooseTacticalNode(b, mode, t) || randomLaneGoal(b);
+            if (roam) {
+              b.lane = roam.lane;
+              setBotGoal(b, roam.x, roam.y, mode === "flank" ? "flank" : "push", rnd(1.1, 2.1));
+            }
+          }
+          b.planT = rnd(0.24, 0.72);
+          return;
+        }
+
+        if (b.role === "flanker" && dist > 3.4 && Math.random() < 0.64) {
+          const flank = chooseTacticalNode(b, "flank", t);
+          if (flank) {
+            b.lane = flank.lane;
+            setBotGoal(b, flank.x, flank.y, "flank", rnd(0.8, 1.5));
+            b.planT = rnd(0.3, 0.84);
+            return;
+          }
+        }
+
+        if (b.role === "anchor" && dist < 10 && Math.random() < 0.58) {
+          const hold = chooseTacticalNode(b, "cover", t);
+          if (hold) {
+            b.lane = hold.lane;
+            setBotGoal(b, hold.x, hold.y, "hold", rnd(0.75, 1.6));
+            b.planT = rnd(0.32, 0.86);
+            return;
+          }
+        }
+
+        setBotGoal(b, t.x, t.y, "engage", rnd(0.2, 0.5));
+        b.planT = rnd(0.2, 0.58);
+      }
+
+      function makeBot() {
+        const p = presets[S.diff];
+        const b = p.bot;
+        const s = spawn();
+        const role = pickRole();
+        const bot = {
+          id: botSeed++, team: "red", x: s.x, y: s.y, a: rnd(-Math.PI, Math.PI), r: 0.22,
+          isVip: false, name: "",
+          maxHp: 100, hp: 100, alive: true, respawn: 0,
+          fireCd: rnd(0.1, 0.8), react: rnd(0.1, 0.5), target: -1,
+          sw: Math.random() < 0.5 ? -1 : 1, swt: rnd(0.5, 1.9), shotFx: 0,
+          kills: 0, deaths: 0, vx: 0, vy: 0,
+          role, state: "patrol", lane: laneOf(s.y),
+          goalX: s.x, goalY: s.y, goalT: rnd(0.8, 1.6), planT: rnd(0.16, 0.46),
+          suppress: 0, flankSide: Math.random() < 0.5 ? -1 : 1,
+          lastSeenX: s.x, lastSeenY: s.y, lastSeenT: 0,
+          stuckT: 0,
+          gait: rnd(0, TAU), gaitAmp: 0, lean: 0, crouch: 0,
+          sprintBlend: 0, combatBlend: 0, aimPose: 0,
+          sk: { speed:b.speed, aim:b.aim, dmg:b.dmg, fire:b.fire, agg:b.agg, strafe:b.strafe, react:b.react }
+        };
+        train(bot);
+        return bot;
+      }
+
+      function train(bot) {
+        const base = presets[S.diff].bot;
+        const m = S.memory;
+        bot.sk.speed = base.speed * (1 + m.agg * 0.30);
+        bot.sk.aim = clamp(base.aim + m.aim * 0.22, 0.05, 0.98);
+        bot.sk.dmg = base.dmg * (1 + m.agg * 0.32);
+        bot.sk.fire = Math.max(0.08, base.fire * (1 - m.react * 0.45));
+        bot.sk.agg = clamp(base.agg + m.agg * 0.28, 0.1, 1.35);
+        bot.sk.strafe = clamp(base.strafe + m.strafe * 0.34, 0.05, 1.2);
+        bot.sk.react = Math.max(0.06, base.react * (1 - m.react * 0.32));
+
+        if (bot.role === "anchor") {
+          bot.sk.speed *= 0.93;
+          bot.sk.aim = clamp(bot.sk.aim + 0.09, 0.05, 0.99);
+          bot.sk.fire = Math.max(0.07, bot.sk.fire * 0.85);
+          bot.sk.strafe = clamp(bot.sk.strafe * 0.78, 0.05, 1.2);
+          bot.sk.react = Math.max(0.05, bot.sk.react * 0.88);
+        }
+        if (bot.role === "flanker") {
+          bot.sk.speed *= 1.13;
+          bot.sk.agg = clamp(bot.sk.agg + 0.13, 0.1, 1.45);
+          bot.sk.strafe = clamp(bot.sk.strafe * 1.32, 0.05, 1.35);
+          bot.sk.fire = Math.max(0.07, bot.sk.fire * 1.04);
+          bot.sk.aim = clamp(bot.sk.aim - 0.02, 0.05, 0.99);
+        }
+        if (bot.role === "hunter") {
+          bot.sk.speed *= 1.06;
+          bot.sk.dmg *= 1.07;
+          bot.sk.agg = clamp(bot.sk.agg + 0.12, 0.1, 1.45);
+          bot.sk.react = Math.max(0.05, bot.sk.react * 0.9);
+        }
+        if (bot.role === "assault") {
+          bot.sk.speed *= 1.03;
+          bot.sk.dmg *= 1.03;
+          bot.sk.aim = clamp(bot.sk.aim + 0.02, 0.05, 0.99);
+        }
+        if (bot.isVip) {
+          bot.sk.speed *= 0.9;
+          bot.sk.agg = clamp(bot.sk.agg * 0.64, 0.08, 1.2);
+          bot.sk.strafe = clamp(bot.sk.strafe * 0.8, 0.05, 1.2);
+          bot.sk.aim = clamp(bot.sk.aim + 0.05, 0.05, 0.99);
+        }
+
+      }
+
+      function addTracer(x1, y1, x2, y2, team, life = 0.08) {
+        S.tracers.push({ x1, y1, x2, y2, team, life });
+        if (S.tracers.length > 72) S.tracers.shift();
+      }
+
+      function addSpark(x, y, team, life = 0.15, size = 0.16) {
+        S.sparks.push({ x, y, team, life, size });
+        if (S.sparks.length > 96) S.sparks.shift();
+      }
+
+      function reload() {
+        if (!player.alive || player.reload > 0 || player.clip === player.clipSize) return;
+        player.reload = 1.15;
+        push("Recargando...");
+      }
+      function shootPlayer() {
+        if (!player.alive || player.reload > 0 || player.fireCd > 0 || S.mode !== "play") return;
+        if (player.cover && player.coverPeek < 0.55) return;
+        if (player.clip <= 0) return reload();
+
+        player.clip -= 1;
+        const ads = player.adsBlend;
+        player.fireCd = lerp(0.14, 0.125, ads);
+        player.recoil = Math.min(1, player.recoil + lerp(0.86, 0.48, ads));
+        S.muzzle = lerp(0.1, 0.06, ads);
+        S.shotReq = 0;
+        S.style.shots += 1;
+
+        let best = null;
+        let score = Infinity;
+
+        for (const b of S.bots) {
+          if (!b.alive || !isEnemy(player, b)) continue;
+          const dx = b.x - player.x, dy = b.y - player.y;
+          const d = Math.hypot(dx, dy);
+          if (d > 18 || !sight(player.x, player.y, b.x, b.y)) continue;
+          const a = Math.abs(adiff(Math.atan2(dy, dx), player.a));
+          const moving = (keys.KeyA || keys.KeyD || keys.KeyW || keys.KeyS || keys.ShiftLeft || keys.ShiftRight) && !player.cover;
+          const spread = (moving ? 0.028 : 0.013) + player.recoil * 0.02;
+          const cone = spread * lerp(1, 0.48, ads) + lerp(0.15, 0.1, ads) / (d + 1.2);
+          if (a > cone) continue;
+          const s = a * 1.8 + d * 0.02;
+          if (s < score) { score = s; best = b; }
+        }
+
+        const startX = player.x + Math.cos(player.a) * 0.34;
+        const startY = player.y + Math.sin(player.a) * 0.34;
+
+        if (best) {
+          const d = Math.hypot(best.x - player.x, best.y - player.y);
+          addTracer(startX, startY, best.x, best.y, "blue", 0.09);
+          addSpark(best.x, best.y, "blue", 0.14, 0.18);
+          S.style.hits += 1;
+          if (d < 4.5) S.style.close += 1;
+          damage(best, rnd(21, 42), player, d);
+        } else {
+          const missLen = rnd(8, 13);
+          const mx = player.x + Math.cos(player.a) * missLen;
+          const my = player.y + Math.sin(player.a) * missLen;
+          addTracer(startX, startY, mx, my, "blue", 0.08);
+        }
+      }
+
+      function damage(t, amt, at, dist) {
+        if (!t.alive) return;
+        t.hp -= amt;
+
+        if (at === player) {
+          S.style.dmgOut += amt;
+          S.hitFx = Math.min(1, S.hitFx + 0.7);
+        }
+        if (t.id === 0) {
+          S.style.dmgIn += amt;
+          S.flash = Math.min(1, S.flash + amt / 110);
+        }
+        if (t.hp <= 0) kill(t, at, dist);
+      }
+
+      function kill(t, by, dist) {
+        t.alive = false;
+        t.hp = 0;
+        t.vx = 0;
+        t.vy = 0;
+        t.gaitAmp = 0;
+        t.lean = 0;
+        t.sprintBlend = 0;
+        t.combatBlend = 0;
+        t.aimPose = 0;
+
+        if (t.id === 0) {
+          player.deaths += 1;
+          player.streak = 0;
+          player.respawn = 3.2;
+          player.adsBlend = 0;
+          player.sprintBlend = 0;
+          player.turnVel = 0;
+          player.weaponLagX = 0;
+          player.weaponLagY = 0;
+          player.weaponLagR = 0;
+          player.prevA = player.a;
+          player.cover = false;
+          player.coverBlend = 0;
+          player.coverNX = 0;
+          player.coverNY = 0;
+          player.coverPeek = 0;
+          mouse.ads = false;
+          push("Te eliminaron. Reapareciendo...");
+        } else {
+          t.deaths += 1;
+          t.respawn = (S.gameMode === "vip" && t.isVip) ? Infinity : rnd(2.2, 4.4);
+          if (S.gameMode === "vip" && t.isVip) {
+            S.endReason = "vip_down";
+            push("El VIP ha caido.");
+          }
+        }
+
+        if (by) {
+          if (by.id === 0) {
+            player.kills += 1;
+            player.streak += 1;
+            S.style.kills += 1;
+            if (dist < 4.2) S.style.close += 1;
+            push(`Baja confirmada. Racha ${player.streak}`);
+          } else {
+            by.kills = (by.kills || 0) + 1;
+          }
+          if (S.gameMode !== "ffa" && by.id !== t.id) {
+            const team = by.team === "red" ? "red" : "blue";
+            S.teamScores[team] += 1;
+          }
+        }
+      }
+
+      function leaderKills() {
+        let top = player.kills;
+        for (const b of S.bots) {
+          const k = b.kills || 0;
+          if (k > top) top = k;
+        }
+        return top;
+      }
+
+      function leaderTeamScore() {
+        return Math.max(S.teamScores.blue, S.teamScores.red);
+      }
+
+      function matchEndReason() {
+        if (S.gameMode === "ffa") {
+          if (S.time <= 0) return "time";
+          if (leaderKills() >= S.limit) return "score";
+          return "";
+        }
+        if (S.gameMode === "teams") {
+          if (S.time <= 0) return "time";
+          if (leaderTeamScore() >= S.limit) return "score";
+          return "";
+        }
+        const vip = getVipBot();
+        if (!vip || !vip.alive || S.endReason === "vip_down") return "vip_down";
+        if (S.time <= 0) return "vip_survived";
+        if (leaderTeamScore() >= S.limit) {
+          return S.teamScores.red >= S.limit ? "vip_down" : "score";
+        }
+        return "";
+      }
+
+      function ffaTable() {
+        const table = [{
+          id: 0, name: "TU", kills: player.kills, deaths: player.deaths, isPlayer: true
+        }];
+        for (const b of S.bots) {
+          table.push({
+            id: b.id,
+            name: b.name || `BOT ${b.id}`,
+            kills: b.kills || 0,
+            deaths: b.deaths || 0,
+            isPlayer: false
+          });
+        }
+        table.sort((a, b) => (b.kills - a.kills) || (a.deaths - b.deaths) || (a.id - b.id));
+        return table;
+      }
+
+      function respawnPlayer() {
+        const s = spawn(S.gameMode === "ffa" ? "any" : "blue");
+        player.x = s.x;
+        player.y = s.y;
+        player.a = rnd(-0.4, 0.4);
+        player.hp = player.maxHp;
+        player.alive = true;
+        player.clip = player.clipSize;
+        player.reload = 0;
+        player.fireCd = 0;
+        player.recoil = 0;
+        player.adsBlend = 0;
+        player.vx = 0;
+        player.vy = 0;
+        player.sprintBlend = 0;
+        player.turnVel = 0;
+        player.weaponLagX = 0;
+        player.weaponLagY = 0;
+        player.weaponLagR = 0;
+        player.prevA = player.a;
+        player.cover = false;
+        player.coverBlend = 0;
+        player.coverNX = 0;
+        player.coverNY = 0;
+        player.coverPeek = 0;
+        mouse.ads = false;
+      }
+
+      function respawnBot(b) {
+        if (S.gameMode === "vip" && b.isVip) return;
+        const s = spawn(S.gameMode === "ffa" ? "any" : b.team);
+        b.x = s.x;
+        b.y = s.y;
+        b.a = rnd(-Math.PI, Math.PI);
+        b.hp = b.maxHp;
+        b.alive = true;
+        b.fireCd = rnd(0.1, 0.8);
+        b.react = rnd(0.05, b.sk.react + 0.2);
+        b.target = -1;
+        b.state = "patrol";
+        b.lane = laneOf(s.y);
+        b.goalX = s.x;
+        b.goalY = s.y;
+        b.goalT = rnd(0.7, 1.5);
+        b.planT = rnd(0.18, 0.48);
+        b.suppress = 0;
+        b.flankSide = Math.random() < 0.5 ? -1 : 1;
+        b.lastSeenX = s.x;
+        b.lastSeenY = s.y;
+        b.lastSeenT = 0;
+        b.stuckT = 0;
+        b.vx = 0;
+        b.vy = 0;
+        b.gait = rnd(0, TAU);
+        b.gaitAmp = 0;
+        b.lean = 0;
+        b.crouch = 0;
+        b.sprintBlend = 0;
+        b.combatBlend = 0;
+        b.aimPose = 0;
+        train(b);
+      }
+
+      function pickTarget(b) {
+        let best = null;
+        let score = Infinity;
+
+        const consider = (o) => {
+          if (!o.alive || o.id === b.id || !isEnemy(b, o)) return;
+          const dx = o.x - b.x;
+          const dy = o.y - b.y;
+          const d = Math.hypot(dx, dy);
+          if (d > 18.5) return;
+
+          const vis = sight(b.x, b.y, o.x, o.y);
+          let s = d * (vis ? 0.54 : 1.12);
+          if (o.id === b.target) s *= 0.78;
+
+          const hpRatio = clamp(o.hp / o.maxHp, 0, 1);
+          s -= (1 - hpRatio) * 1.05;
+
+          if (b.role === "hunter") s -= clamp((11 - d) / 11, 0, 1) * 0.85;
+          if (b.role === "anchor" && vis) s -= 0.42;
+
+          if (s < score) {
+            score = s;
+            best = o;
+          }
+        };
+
+        if (player.alive) consider(player);
+
+        for (const o of S.bots) consider(o);
+        return best;
+      }
+
+      function updatePlayer(dt) {
+        if (!player.alive) {
+          player.cover = false;
+          player.coverBlend = lerp(player.coverBlend, 0, clamp(dt * 12, 0, 1));
+          player.coverPeek = lerp(player.coverPeek, 0, clamp(dt * 12, 0, 1));
+          player.vx = 0;
+          player.vy = 0;
+          player.sprintBlend = 0;
+          player.turnVel = 0;
+          player.prevA = player.a;
+          player.respawn -= dt;
+          if (player.respawn <= 0) respawnPlayer();
+          return;
+        }
+
+        const wasRel = player.reload > 0;
+        if (player.reload > 0) {
+          player.reload = Math.max(0, player.reload - dt);
+          if (wasRel && player.reload === 0) {
+            player.clip = player.clipSize;
+            push("Recarga completa");
+          }
+        }
+        player.fireCd = Math.max(0, player.fireCd - dt);
+        player.recoil = Math.max(0, player.recoil - dt * 5.2);
+        player.adsBlend = clamp(player.adsBlend + (mouse.ads ? 1 : -1) * dt * 6.4, 0, 1);
+        player.coverBlend = lerp(player.coverBlend, player.cover ? 1 : 0, clamp(dt * 9.5, 0, 1));
+        const coverPeekIntent = player.cover && mouse.ads ? 1 : 0;
+        player.coverPeek = lerp(player.coverPeek, coverPeekIntent, clamp(dt * 12, 0, 1));
+        S.shotReq = Math.max(0, S.shotReq - dt);
+
+        let turn = 0;
+        if (keys.ArrowLeft || keys.KeyQ) turn -= 1;
+        if (keys.ArrowRight || keys.KeyE) turn += 1;
+        const turnMul = lerp(1, 0.74, player.adsBlend) * (player.cover ? 0.62 : 1);
+        player.a = wrap(player.a + turn * player.turn * turnMul * dt);
+
+        let f = 0, s = 0;
+        if (keys.KeyW) f += 1;
+        if (keys.KeyS) f -= 1;
+        if (keys.KeyD) s += 1;
+        if (keys.KeyA) s -= 1;
+
+        const px = player.x;
+        const py = player.y;
+        const sprintKey = keys.ShiftLeft || keys.ShiftRight;
+
+        if (player.cover && sprintKey) leaveCover(true);
+
+        if (player.cover) {
+          const c = nearestCoverWall(player.x, player.y, 0.98, player.coverNX, player.coverNY, 0.6);
+          if (!c || c.d > 0.92) {
+            leaveCover(true);
+          } else {
+            player.coverNX = lerp(player.coverNX, c.nx, clamp(dt * 16, 0, 1));
+            player.coverNY = lerp(player.coverNY, c.ny, clamp(dt * 16, 0, 1));
+            const nLen = Math.hypot(player.coverNX, player.coverNY) || 1;
+            player.coverNX /= nLen;
+            player.coverNY /= nLen;
+
+            const tx = -player.coverNY;
+            const ty = player.coverNX;
+            const slide = clamp(s + f * 0.45, -1, 1);
+            if (Math.abs(slide) > 0.01) {
+              const slideSp = player.speed * lerp(0.56, 0.44, player.adsBlend);
+              move(player, tx * slide * slideSp * dt, ty * slide * slideSp * dt);
+              S.style.strafe += dt * Math.abs(slide);
+            }
+
+            const desired = lerp(0.32, 0.64, player.coverPeek);
+            const corr = clamp(desired - c.d, -0.095, 0.095);
+            if (Math.abs(corr) > 0.002) {
+              move(player, player.coverNX * corr * 0.85, player.coverNY * corr * 0.85);
+            }
+
+            const face = Math.atan2(player.coverNY, player.coverNX);
+            const limit = lerp(0.52, 1.02, player.coverPeek);
+            const offset = clamp(adiff(player.a, face), -limit, limit);
+            player.a = wrap(face + offset);
+
+            if (keys.KeyS && !mouse.ads) leaveCover(true);
+          }
+        }
+
+        if (!player.cover && (f || s)) {
+          const sp = (keys.ShiftLeft || keys.ShiftRight) ? 1.22 : 1;
+          const adsSlow = lerp(1, 0.83, player.adsBlend);
+          const vx = Math.cos(player.a) * f - Math.sin(player.a) * s;
+          const vy = Math.sin(player.a) * f + Math.cos(player.a) * s;
+          const m = Math.hypot(vx, vy) || 1;
+          move(player, (vx / m) * player.speed * sp * adsSlow * dt, (vy / m) * player.speed * sp * adsSlow * dt);
+          if (Math.abs(f) > 0) S.style.fwd += dt * Math.abs(f);
+          if (Math.abs(s) > 0) S.style.strafe += dt * Math.abs(s);
+        }
+
+        const sprintIntent = (!player.cover && sprintKey && (f || s) && player.adsBlend < 0.32) ? 1 : 0;
+        player.sprintBlend = lerp(player.sprintBlend, sprintIntent, clamp(dt * 8.5, 0, 1));
+
+        player.vx = (player.x - px) / Math.max(0.0001, dt);
+        player.vy = (player.y - py) / Math.max(0.0001, dt);
+        const turnDelta = adiff(player.a, player.prevA);
+        const turnRate = turnDelta / Math.max(0.0001, dt);
+        player.turnVel = lerp(player.turnVel, turnRate, clamp(dt * 14, 0, 1));
+        player.prevA = player.a;
+
+        if (mouse.down || keys.Space || S.shotReq > 0) shootPlayer();
+      }
+
+      function updateBots(dt) {
+        for (const b of S.bots) {
+          if (!b.alive) {
+            b.respawn -= dt;
+            if (b.respawn <= 0) respawnBot(b);
+            continue;
+          }
+
+          const ox = b.x;
+          const oy = b.y;
+
+          b.fireCd = Math.max(0, b.fireCd - dt);
+          b.react = Math.max(0, b.react - dt);
+          b.swt -= dt;
+          if (b.swt <= 0) {
+            b.sw *= -1;
+            b.swt = rnd(0.9, 2.6);
+          }
+          b.goalT = Math.max(0, b.goalT - dt);
+          b.planT = Math.max(0, b.planT - dt);
+          b.lastSeenT = Math.max(0, b.lastSeenT - dt);
+          b.suppress = Math.max(0, b.suppress - dt);
+
+          const t = pickTarget(b);
+          let vis = false;
+          let d = Infinity;
+          let aim = b.a;
+
+          if (t) {
+            const dx = t.x - b.x;
+            const dy = t.y - b.y;
+            d = Math.hypot(dx, dy);
+            aim = Math.atan2(dy, dx);
+            vis = sight(b.x, b.y, t.x, t.y);
+
+            if (b.target !== t.id) {
+              b.target = t.id;
+              b.react = b.sk.react + rnd(0, 0.22);
+              b.flankSide = Math.random() < 0.5 ? -1 : 1;
+            }
+            if (vis) {
+              b.lastSeenX = t.x;
+              b.lastSeenY = t.y;
+              b.lastSeenT = 2 + b.sk.agg * 0.8;
+            }
+          } else {
+            b.target = -1;
+          }
+
+          if (b.planT <= 0 || b.goalT <= 0 || (b.state === "engage" && Math.random() < 0.08)) {
+            replanBot(b, t, vis, d);
+          }
+
+          const gxv = b.goalX - b.x;
+          const gyv = b.goalY - b.y;
+          const gd = Math.hypot(gxv, gyv);
+          const lookA = (vis && b.state !== "fallback")
+            ? aim
+            : (gd > 0.15 ? Math.atan2(gyv, gxv) : b.a + b.sw * 0.04);
+
+          const sprintHint = (!vis && gd > 2.3 && b.state !== "hold" && b.state !== "fallback") ? 1 : 0;
+          const turnMult = 1 - Math.max(b.sprintBlend, sprintHint * 0.55) * 0.24 + b.combatBlend * 0.05;
+          const turn = (2 + b.sk.speed * 1.4 + (vis ? 0.6 : 0)) * clamp(turnMult, 0.72, 1.08) * dt;
+          const diff = adiff(lookA, b.a);
+          b.a = wrap(b.a + clamp(diff, -turn, turn));
+
+          let mvx = 0;
+          let mvy = 0;
+
+          if (gd > 0.2) {
+            const goalWeight = vis ? 0.35 : 1;
+            mvx += (gxv / gd) * goalWeight;
+            mvy += (gyv / gd) * goalWeight;
+          }
+
+          if (t) {
+            const tx = t.x - b.x;
+            const ty = t.y - b.y;
+            const td = Math.max(0.001, Math.hypot(tx, ty));
+            const nx = tx / td;
+            const ny = ty / td;
+            const idealBase = roleRange[b.role] || 5;
+            const ideal = lerp(idealBase + 1.1, idealBase - 0.65, clamp(b.sk.agg, 0, 1));
+
+            if (vis) {
+              if (td > ideal + 0.35) {
+                mvx += nx * 0.95;
+                mvy += ny * 0.95;
+              }
+              if (td < ideal * 0.62 || b.state === "fallback") {
+                const back = b.state === "fallback" ? 1.15 : 0.55;
+                mvx -= nx * back;
+                mvy -= ny * back;
+              }
+
+              let side = b.sw;
+              if (b.state === "flank") side = b.flankSide;
+              const near = td < ideal * 0.95;
+              const far = td > ideal * 1.35;
+              let strafeMul = b.state === "hold" ? 0.46 : b.state === "flank" ? 0.9 : 0.68;
+              if (near) strafeMul *= 0.58;
+              if (far) strafeMul *= 0.84;
+              mvx += -ny * b.sk.strafe * side * strafeMul;
+              mvy += nx * b.sk.strafe * side * strafeMul;
+
+              if (b.role === "hunter" && td < 5.6) {
+                mvx += nx * 0.22;
+                mvy += ny * 0.22;
+              }
+            } else if (b.lastSeenT > 0.05) {
+              const lx = b.lastSeenX - b.x;
+              const ly = b.lastSeenY - b.y;
+              const ld = Math.max(0.001, Math.hypot(lx, ly));
+              mvx += (lx / ld) * 0.8;
+              mvy += (ly / ld) * 0.8;
+              mvx += (-ly / ld) * b.flankSide * 0.2;
+              mvy += (lx / ld) * b.flankSide * 0.2;
+            }
+
+            if (t.hp < t.maxHp * 0.35) {
+              mvx += nx * 0.28;
+              mvy += ny * 0.28;
+            }
+          }
+
+          const sep = teammateSeparation(b, 1.15);
+          mvx += sep.x * 0.85;
+          mvy += sep.y * 0.85;
+
+          const repel = wallRepel(b.x, b.y, 0.72);
+          if (repel.m > 0.001) {
+            const repelW = (vis ? 0.44 : 0.66) + (b.state === "fallback" ? 0.24 : 0);
+            mvx += repel.x * repelW * (0.42 + repel.m * 0.95);
+            mvy += repel.y * repelW * (0.42 + repel.m * 0.95);
+          }
+
+          let speed = 1.34 + b.sk.speed * 1.3;
+          if (b.state === "fallback") speed *= 1.1;
+          if (b.state === "hold") speed *= 0.9;
+          if (b.state === "patrol") speed *= 0.98;
+          const sprintMul = 1 + b.sprintBlend * (b.role === "flanker" ? 0.44 : 0.32);
+          const combatMul = 1 - b.combatBlend * 0.12;
+          speed *= sprintMul * combatMul;
+
+          const mm = Math.hypot(mvx, mvy);
+          let desiredVX = mm > 0.001 ? (mvx / mm) * speed : 0;
+          let desiredVY = mm > 0.001 ? (mvy / mm) * speed : 0;
+          const turnPenalty = clamp(Math.abs(diff) / 1.2, 0, 1);
+          if (mm > 0.001) {
+            const fx = Math.cos(b.a);
+            const fy = Math.sin(b.a);
+            let fwd = desiredVX * fx + desiredVY * fy;
+            let side = -desiredVX * fy + desiredVY * fx;
+            const strafeCap = speed * lerp(0.32, 0.62, b.combatBlend) * lerp(0.92, 0.3, b.sprintBlend);
+            side *= clamp(1 - turnPenalty * 0.55, 0.35, 1);
+            side = clamp(side, -strafeCap, strafeCap);
+            if (b.sprintBlend > 0.35 && fwd < 0) fwd *= 0.3;
+            desiredVX = fx * fwd - fy * side;
+            desiredVY = fy * fwd + fx * side;
+          }
+
+          const accel = ((b.state === "fallback" ? 9.6 : b.state === "flank" ? 8.8 : 7.2) + b.sk.speed * 1.35) * (1 - turnPenalty * 0.28);
+          const brake = b.state === "hold" ? 9.6 : 8.1;
+          const blend = clamp(dt * (mm > 0.001 ? accel : brake), 0, 0.86);
+
+          b.vx = lerp(b.vx, desiredVX, blend);
+          b.vy = lerp(b.vy, desiredVY, blend);
+
+          const tryDX = b.vx * dt;
+          const tryDY = b.vy * dt;
+          if (Math.abs(tryDX) > 0.0001 || Math.abs(tryDY) > 0.0001) {
+            move(b, tryDX, tryDY);
+          }
+
+          // Capa extra de seguridad: si entra en colision, vuelve al punto valido anterior.
+          if (!free(b.x, b.y, b.r || 0.22)) {
+            const sideStep = 0.08;
+            const fx = Math.cos(b.a);
+            const fy = Math.sin(b.a);
+            const lx = ox - fy * sideStep;
+            const ly = oy + fx * sideStep;
+            const rx = ox + fy * sideStep;
+            const ry = oy - fx * sideStep;
+            if (free(lx, ly, b.r || 0.22)) {
+              b.x = lx;
+              b.y = ly;
+            } else if (free(rx, ry, b.r || 0.22)) {
+              b.x = rx;
+              b.y = ry;
+            } else {
+              b.x = ox;
+              b.y = oy;
+            }
+            b.vx *= 0.2;
+            b.vy *= 0.2;
+          }
+
+          const realVX = (b.x - ox) / Math.max(0.0001, dt);
+          const realVY = (b.y - oy) / Math.max(0.0001, dt);
+          b.vx = realVX;
+          b.vy = realVY;
+
+          const moveSpeed = Math.hypot(realVX, realVY);
+          const stuckNow = gd > 0.9 && mm > 0.24 && moveSpeed < 0.09;
+          if (stuckNow) b.stuckT += dt;
+          else b.stuckT = Math.max(0, (b.stuckT || 0) - dt * 2.6);
+          if (b.stuckT > 0.55) {
+            const sx = -Math.sin(b.a);
+            const sy = Math.cos(b.a);
+            const step = 0.1;
+            const canL = free(b.x + sx * step, b.y + sy * step, b.r || 0.22);
+            const canR = free(b.x - sx * step, b.y - sy * step, b.r || 0.22);
+            if (canL) {
+              b.x += sx * step;
+              b.y += sy * step;
+            } else if (canR) {
+              b.x -= sx * step;
+              b.y -= sy * step;
+            }
+            b.planT = 0;
+            b.goalT = 0;
+            b.sw *= -1;
+            b.stuckT = 0.16;
+          }
+
+          const gaitTarget = clamp(moveSpeed / Math.max(0.01, speed), 0, 1);
+          b.gaitAmp = lerp(b.gaitAmp, gaitTarget, clamp(dt * 8.5, 0, 1));
+          b.gait = (b.gait + dt * (2.8 + moveSpeed * (1.75 + b.sprintBlend * 1.2))) % TAU;
+
+          const sideVel = -Math.sin(b.a) * realVX + Math.cos(b.a) * realVY;
+          const leanTarget = clamp(sideVel / Math.max(0.01, speed), -1, 1);
+          b.lean = lerp(b.lean, leanTarget, clamp(dt * 9.2, 0, 1));
+          const crouchTarget = b.state === "hold" || b.state === "fallback" ? 1 : 0;
+          b.crouch = lerp(b.crouch, crouchTarget, clamp(dt * 6.5, 0, 1));
+          const sprintIntent = (!vis && gd > 2.4 && b.state !== "hold" && b.state !== "fallback" && moveSpeed > 0.5) ? 1 : 0;
+          const combatIntent = vis || b.state === "hold" || b.state === "fallback" ? 1 : 0;
+          const aimIntent = (t && vis && d < 14.5 && b.react <= 0.04) ? 1 : 0;
+          b.sprintBlend = lerp(b.sprintBlend, sprintIntent, clamp(dt * 4.8, 0, 1));
+          b.combatBlend = lerp(b.combatBlend, combatIntent, clamp(dt * 6.6, 0, 1));
+          b.aimPose = lerp(b.aimPose, aimIntent, clamp(dt * 9.6, 0, 1));
+
+          if (t && vis && d < 18 && b.fireCd <= 0 && b.react <= 0) {
+            const align = Math.abs(adiff(aim, b.a));
+            const ownMove = Math.hypot(b.vx, b.vy);
+            const tvx = t.vx || 0;
+            const tvy = t.vy || 0;
+            const targetMove = Math.hypot(tvx, tvy);
+
+            const distPen = clamp((d - 2.4) * 0.027, 0, 0.5);
+            const alignPen = align * 0.58;
+            const movePen = clamp(ownMove * 0.06 + targetMove * 0.05, 0, 0.26);
+
+            let hit = clamp(b.sk.aim - distPen - alignPen - movePen, 0.03, 0.99);
+            if (b.role === "anchor") hit = clamp(hit + 0.07, 0.03, 0.99);
+            if (b.state === "flank") hit = clamp(hit + 0.05, 0.03, 0.99);
+            if (b.state === "fallback") hit *= 0.78;
+
+            const suppressShot = (b.role === "anchor" || b.suppress > 0.02) && d < 14 && Math.random() < 0.24;
+            const cadence = b.role === "anchor" ? 0.86 : b.role === "flanker" ? 1.05 : b.role === "hunter" ? 0.94 : 1;
+            b.fireCd = b.sk.fire * rnd(0.78, 1.22) * cadence;
+            b.shotFx = 0.06;
+            b.aimPose = Math.max(b.aimPose, 0.92);
+
+            const sx = b.x + Math.cos(b.a) * 0.28;
+            const sy = b.y + Math.sin(b.a) * 0.28;
+            const lead = clamp(d * 0.024, 0.02, 0.45);
+            const spread = (1 - hit) * 1.65 + (suppressShot ? 0.45 : 0.11);
+            const tx = t.x + tvx * lead + rnd(-spread, spread);
+            const ty = t.y + tvy * lead + rnd(-spread, spread);
+            addTracer(sx, sy, tx, ty, b.team, 0.07);
+
+            const roll = Math.random();
+            if (roll < hit) {
+              addSpark(t.x, t.y, b.team, 0.12, 0.14);
+              damage(t, b.sk.dmg * rnd(0.8, 1.2), b, d);
+            } else if (suppressShot && roll < hit + 0.13) {
+              addSpark(t.x, t.y, b.team, 0.1, 0.12);
+              damage(t, b.sk.dmg * rnd(0.42, 0.68), b, d);
+            }
+          }
+
+          b.shotFx = Math.max(0, b.shotFx - dt);
+        }
+      }
+
+      function updateLearn(dt) {
+        S.learnT += dt;
+        if (S.learnT < 5) return;
+        S.learnT = 0;
+
+        const st = S.style;
+        const acc = st.hits / Math.max(1, st.shots);
+        const move = st.fwd + st.strafe;
+        const strafeR = st.strafe / Math.max(1, move);
+        const closeR = st.close / Math.max(1, st.hits);
+        const ctrl = st.dmgOut / Math.max(1, st.dmgOut + st.dmgIn);
+
+        const ta = clamp(acc * 1.2 + ctrl * 0.35, 0, 1);
+        const tg = clamp(closeR * 1.05 + ctrl * 0.45 + st.kills * 0.05, 0, 1);
+        const ts = clamp(strafeR * 1.25, 0, 1);
+        const tr = clamp(acc * 0.55 + ctrl * 0.62 + closeR * 0.36, 0, 1);
+
+        const lr = presets[S.diff].learn;
+        S.memory.aim = lerp(S.memory.aim, ta, lr);
+        S.memory.agg = lerp(S.memory.agg, tg, lr);
+        S.memory.strafe = lerp(S.memory.strafe, ts, lr);
+        S.memory.react = lerp(S.memory.react, tr, lr);
+
+        for (const b of S.bots) train(b);
+
+        const power = Math.round(((S.memory.aim + S.memory.agg + S.memory.strafe + S.memory.react) / 4) * 100);
+        push(`IA tactica entrenada: ${power}%`);
+
+        st.shots *= 0.78;
+        st.hits *= 0.78;
+        st.close *= 0.78;
+        st.fwd *= 0.72;
+        st.strafe *= 0.72;
+        st.dmgOut *= 0.76;
+        st.dmgIn *= 0.76;
+        st.kills *= 0.74;
+
+        saveMemory();
+      }
+
+      function update(dt) {
+        if (S.mode !== "play") return;
+
+        S.elapsed += dt;
+        S.time -= dt;
+
+        const endReason = matchEndReason();
+        if (endReason) {
+          finish(endReason);
+          return;
+        }
+
+        updatePlayer(dt);
+        updateBots(dt);
+        updateLearn(dt);
+
+        S.flash = Math.max(0, S.flash - dt * 0.75);
+        S.muzzle = Math.max(0, S.muzzle - dt * 7.2);
+        S.hitFx = Math.max(0, S.hitFx - dt * 6.5);
+        for (const t of S.tracers) t.life -= dt;
+        for (const p of S.sparks) p.life -= dt;
+        S.tracers = S.tracers.filter((t) => t.life > 0);
+        S.sparks = S.sparks.filter((p) => p.life > 0);
+        for (const m of S.feed) m.t -= dt;
+        S.feed = S.feed.filter((m) => m.t > 0);
+      }
+
+      function render() {
+        const day = (Math.sin(S.elapsed * 0.06) + 1) * 0.5;
+        const ads = player.adsBlend;
+        const coverBlend = clamp(player.coverBlend || 0, 0, 1);
+        const camDrop = coverBlend * 6;
+        const vfov = lerp(FOV, FOV * 0.73, ads);
+        const sunA = 0.58 + day * 1.5;
+        const sunDX = Math.cos(sunA);
+        const sunDY = Math.sin(sunA);
+        disableSmoothing(gx);
+
+        const sky = gx.createLinearGradient(0, 0, 0, RH / 2);
+        sky.addColorStop(0, S.diff === "extrema" ? "#101a36" : "#4d73bb");
+        sky.addColorStop(0.55, S.diff === "extrema" ? "#2d2f51" : "#5c77ad");
+        sky.addColorStop(1, S.diff === "extrema" ? "#4f3437" : "#7f5e74");
+        gx.fillStyle = sky;
+        gx.fillRect(0, 0, RW, RH / 2);
+
+        const sunX = RW * (0.22 + day * 0.56);
+        const sunY = RH * (0.12 + (1 - day) * 0.09);
+        const sun = gx.createRadialGradient(sunX, sunY, 1, sunX, sunY, 44);
+        sun.addColorStop(0, "rgba(255,243,191,0.44)");
+        sun.addColorStop(0.35, "rgba(255,209,150,0.2)");
+        sun.addColorStop(1, "rgba(255,209,150,0)");
+        gx.fillStyle = sun;
+        gx.fillRect(0, 0, RW, RH / 2);
+
+        for (let i = 0; i < 6; i += 1) {
+          const spread = 18 + i * 13;
+          const ray = gx.createLinearGradient(sunX - spread, sunY - 6, sunX + spread, sunY + RH * 0.42);
+          const alpha = 0.016 - i * 0.002;
+          ray.addColorStop(0, `rgba(255,223,165,${alpha.toFixed(3)})`);
+          ray.addColorStop(1, "rgba(255,223,165,0)");
+          gx.fillStyle = ray;
+          gx.beginPath();
+          gx.moveTo(sunX - spread, sunY + 2);
+          gx.lineTo(sunX + spread, sunY + 2);
+          gx.lineTo(sunX + spread * 2.7, RH * 0.9);
+          gx.lineTo(sunX - spread * 2.7, RH * 0.9);
+          gx.closePath();
+          gx.fill();
+        }
+
+        const sunBand = gx.createLinearGradient(sunX - 120, sunY, sunX + 120, sunY);
+        sunBand.addColorStop(0, "rgba(255,224,170,0)");
+        sunBand.addColorStop(0.5, "rgba(255,224,170,0.12)");
+        sunBand.addColorStop(1, "rgba(255,224,170,0)");
+        gx.fillStyle = sunBand;
+        gx.fillRect(sunX - 120, sunY - 1, 240, 2);
+
+        for (let i = 0; i < 12; i += 1) {
+          const drift = (S.elapsed * (2.6 + i * 0.35)) % (RW + 70);
+          const cloudX = RW - drift + i * 38;
+          const cloudY = RH * (0.16 + (i % 4) * 0.055);
+          const cloudR = 16 + (i % 3) * 7;
+          gx.fillStyle = `rgba(220,230,255,${(0.03 + (1 - day) * 0.03).toFixed(3)})`;
+          gx.beginPath();
+          gx.ellipse(cloudX, cloudY, cloudR, cloudR * 0.45, 0, 0, TAU);
+          gx.fill();
+        }
+
+        const ridgeY = RH * 0.49;
+        for (let i = 0; i < 7; i += 1) {
+          const px = ((i * 94 + S.elapsed * (1.2 + i * 0.18)) % (RW + 120)) - 60;
+          const w = 82 + (i % 3) * 22;
+          const h = 20 + (i % 4) * 7;
+          gx.fillStyle = i % 2 ? "rgba(36,52,74,0.32)" : "rgba(30,43,64,0.26)";
+          gx.beginPath();
+          gx.moveTo(px - w, ridgeY + 7);
+          gx.lineTo(px, ridgeY - h);
+          gx.lineTo(px + w, ridgeY + 7);
+          gx.closePath();
+          gx.fill();
+        }
+
+        const horizon = gx.createLinearGradient(0, RH * 0.44, 0, RH * 0.65);
+        horizon.addColorStop(0, "rgba(255,218,167,0)");
+        horizon.addColorStop(1, "rgba(255,218,167,0.16)");
+        gx.fillStyle = horizon;
+        gx.fillRect(0, RH * 0.42, RW, RH * 0.28);
+
+        const floor = gx.createLinearGradient(0, RH / 2, 0, RH);
+        floor.addColorStop(0, "#5a4431");
+        floor.addColorStop(0.52, "#2f2116");
+        floor.addColorStop(1, "#17100b");
+        gx.fillStyle = floor;
+        gx.fillRect(0, RH / 2, RW, RH / 2);
+
+        for (let y = RH / 2; y < RH; y += 1) {
+          const depth = (y - RH / 2) / (RH / 2);
+          const dark = 0.04 + depth * 0.26;
+          gx.fillStyle = `rgba(0,0,0,${dark.toFixed(3)})`;
+          gx.fillRect(0, y, RW, 1);
+
+          const rough = Math.abs(Math.sin(y * 0.61 + S.elapsed * 1.8) * Math.cos(y * 0.19 - S.elapsed * 1.15));
+          if (rough > 0.58) {
+            const hi = (0.004 + (rough - 0.58) * 0.04) * (1 - depth * 0.64);
+            gx.fillStyle = `rgba(191,141,104,${hi.toFixed(3)})`;
+            gx.fillRect(0, y, RW, 1);
+          }
+
+          if (((y + ((S.elapsed * 8) | 0)) % 13) === 0) {
+            const line = clamp((0.05 - depth * 0.03), 0.007, 0.05);
+            gx.fillStyle = `rgba(158,118,89,${line.toFixed(3)})`;
+            gx.fillRect(0, y, RW, 1);
+          }
+        }
+
+        for (let y = (RH / 2) | 0; y < RH; y += 2) {
+          const depth = (y - RH / 2) / (RH / 2);
+          const density = clamp(0.28 - depth * 0.22, 0.05, 0.28);
+          for (let x = ((y * 3) % 11); x < RW; x += 11) {
+            const n = Math.sin(x * 0.19 + y * 0.31) + Math.cos(x * 0.11 - y * 0.23);
+            if (n < 1.02) continue;
+            const dither = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+            const frac = dither - Math.floor(dither);
+            if (frac > density) continue;
+            const a = (0.015 + (n - 1.02) * 0.02) * (1 - depth * 0.58);
+            gx.fillStyle = `rgba(168,124,92,${a.toFixed(3)})`;
+            gx.fillRect(x, y, 1, 1);
+          }
+        }
+
+        gx.strokeStyle = "rgba(186,132,95,0.09)";
+        gx.lineWidth = 1;
+        for (let i = -9; i <= 9; i += 1) {
+          const x1 = RW * 0.5 + i * 4;
+          const x2 = RW * 0.5 + i * 34;
+          gx.beginPath();
+          gx.moveTo(x1, RH * 0.5);
+          gx.lineTo(x2, RH);
+          gx.stroke();
+        }
+
+        for (let x = 0; x < RW; x += 1) {
+          const a = player.a - vfov / 2 + (x / RW) * vfov;
+          const h = cast(player.x, player.y, a);
+          const d = Math.max(0.0001, h.d * Math.cos(a - player.a));
+          S.depth[x] = d;
+
+          const hgt = Math.min(RH * 1.2, RH / d);
+          const top = ((RH - hgt) / 2 + camDrop) | 0;
+          const base = wallColor[h.t] || wallColor[1];
+          const sh = 1 / (1 + d * 0.14);
+
+          const fx = h.x - Math.floor(h.x);
+          const fy = h.y - Math.floor(h.y);
+          const edgeX = Math.min(fx, 1 - fx);
+          const edgeY = Math.min(fy, 1 - fy);
+          const sideShade = edgeX < edgeY ? 0.84 : 1;
+          const texture = Math.sin(h.x * 10.2 + h.y * 7.5) * 0.07 + Math.cos(h.x * 13.5 - h.y * 8.1) * 0.05;
+          const rough = (Math.sin((h.x + h.y) * 34.2) + Math.cos((h.x - h.y) * 28.6)) * 0.03;
+          const seam = (((((h.x + h.y) * 6) | 0) & 1) ? 0.03 : -0.02) * clamp(1 - d / 12, 0, 1);
+          let nx = 0;
+          let ny = 0;
+          if (edgeX < edgeY) nx = fx < 0.5 ? -1 : 1;
+          else ny = fy < 0.5 ? -1 : 1;
+          const sunDot = nx * sunDX + ny * sunDY;
+          const sunBoost = Math.max(0, sunDot) * clamp(1 - d / 18, 0, 1) * 0.24;
+          const backFade = Math.max(0, -sunDot) * 0.08;
+          const lit = clamp(sh * sideShade + texture + rough + seam + 0.1 + sunBoost - backFade, 0.05, 1);
+          const warm = clamp((7.5 - d) / 7.5, 0, 1) * 0.15;
+
+          const r = clamp(base[0] * lit + 255 * warm * 0.12, 0, 255) | 0;
+          const g = clamp(base[1] * lit + 232 * warm * 0.09, 0, 255) | 0;
+          const b = clamp(base[2] * lit + 188 * warm * 0.06, 0, 255) | 0;
+          gx.fillStyle = `rgb(${r},${g},${b})`;
+          gx.fillRect(x, top, 1, hgt);
+
+          const cap = Math.min(3, hgt * 0.1);
+          if (cap > 0.5) {
+            gx.fillStyle = "rgba(0,0,0,0.14)";
+            gx.fillRect(x, top, 1, cap);
+          }
+
+          const contact = Math.min(4, hgt * 0.14);
+          if (contact > 0.5) {
+            gx.fillStyle = "rgba(0,0,0,0.2)";
+            gx.fillRect(x, top + hgt - contact, 1, contact);
+          }
+
+          const fog = clamp((d - 2.6) / 14.5, 0, 0.76);
+          if (fog > 0.02) {
+            gx.fillStyle = `rgba(83,108,134,${(fog * 0.58).toFixed(3)})`;
+            gx.fillRect(x, top, 1, hgt);
+          }
+        }
+
+        const sprites = [];
+        for (const b of S.bots) {
+          if (!b.alive) continue;
+          const dx = b.x - player.x;
+          const dy = b.y - player.y;
+          const d = Math.hypot(dx, dy);
+          if (d < 0.1 || d > MAXD) continue;
+          const rel = adiff(Math.atan2(dy, dx), player.a);
+          if (Math.abs(rel) > vfov * 0.82) continue;
+          sprites.push({ b, d, rel });
+        }
+        sprites.sort((a, b) => b.d - a.d);
+
+        for (const s of sprites) {
+          const sx = (0.5 + s.rel / vfov) * RW;
+          if (sx < -40 || sx > RW + 40) continue;
+          if (S.depth[clamp(sx | 0, 0, RW - 1)] < s.d * 0.92) continue;
+
+          const sz = clamp((RH / s.d) * 0.95, 8, 120);
+          const shade = clamp(1 / (1 + s.d * 0.18), 0.24, 1);
+          const base = s.b.isVip
+            ? [232, 192, 80]
+            : s.b.team === "blue"
+              ? [95, 167, 255]
+              : [226, 82, 82];
+          const cr = (base[0] * shade) | 0;
+          const cg = (base[1] * shade) | 0;
+          const cb = (base[2] * shade) | 0;
+
+          const bw = sz * 0.37;
+          const bh = sz * 0.6;
+          const gait = s.b.gait || 0;
+          const gaitAmp = clamp(s.b.gaitAmp || 0, 0, 1);
+          const crouch = clamp(s.b.crouch || 0, 0, 1);
+          const lean = clamp(s.b.lean || 0, -1, 1);
+          const sprint = clamp(s.b.sprintBlend || 0, 0, 1);
+          const combat = clamp(s.b.combatBlend || 0, 0, 1);
+          const aimPose = clamp(s.b.aimPose || 0, 0, 1);
+          const kick = clamp((s.b.shotFx || 0) / 0.06, 0, 1);
+
+          const lookToPlayer = Math.atan2(player.y - s.b.y, player.x - s.b.x);
+          const faceDiff = adiff(s.b.a, lookToPlayer);
+          const front = Math.cos(faceDiff);
+          const side = Math.sin(faceDiff);
+
+          const stepL = Math.sin(gait) * gaitAmp * (1 + sprint * 0.24);
+          const stepR = Math.sin(gait + Math.PI) * gaitAmp * (1 + sprint * 0.24);
+          const bob = Math.sin(gait * 2) * sz * (0.011 + sprint * 0.018) * gaitAmp;
+          const groundY = RH * 0.5 + camDrop + sz * (0.42 + crouch * 0.02);
+          const centerX = sx + lean * bw * 0.08 + side * bw * 0.04 + sprint * bw * 0.06;
+          const pelvisY = groundY - bh * (0.31 + crouch * 0.07) + bob;
+          const spineTilt = lean * 0.11 + sprint * 0.16 * (side >= 0 ? 1 : -1);
+          const torsoW = bw * lerp(0.85, 0.61, Math.abs(side));
+          const shoulderW = torsoW * (0.96 + combat * 0.07);
+          const hipW = torsoW * (0.82 + crouch * 0.1);
+          const shoulderY = pelvisY - bh * (0.28 - crouch * 0.05) - sprint * bh * 0.04;
+          const neckY = shoulderY - bh * (0.18 + sprint * 0.05);
+          const headW = sz * (0.19 - Math.abs(side) * 0.03);
+          const headH = sz * 0.2;
+
+          gx.fillStyle = `rgba(0,0,0,${clamp(0.35 * shade, 0.08, 0.4).toFixed(3)})`;
+          gx.beginPath();
+          gx.ellipse(
+            centerX + side * bw * 0.04,
+            groundY + bh * 0.05,
+            bw * clamp(0.68 - gaitAmp * 0.08 + sprint * 0.05, 0.52, 0.78),
+            Math.max(1, bh * clamp(0.11 - gaitAmp * 0.025, 0.06, 0.13)),
+            0,
+            0,
+            TAU
+          );
+          gx.fill();
+
+          const thighW = bw * 0.12;
+          const thighH = bh * 0.24;
+          const shinW = bw * 0.11;
+          const shinH = bh * 0.21;
+          const bootW = bw * 0.18;
+          const bootH = bh * 0.055;
+          const legBaseY = pelvisY + bh * 0.02;
+
+          const drawLeg = (sign, phase) => {
+            const swing = phase * bw * (0.1 + sprint * 0.04);
+            const lift = Math.max(0, -phase) * bh * (0.12 + sprint * 0.06);
+            const lx = centerX + sign * hipW * 0.29 + swing;
+            const ly = legBaseY + lift * 0.14;
+            gx.fillStyle = `rgb(${(cr * 0.34) | 0},${(cg * 0.34) | 0},${(cb * 0.34) | 0})`;
+            gx.fillRect(lx - thighW / 2, ly, thighW, thighH);
+            const shinY = ly + thighH - lift * 0.35;
+            gx.fillStyle = `rgb(${(cr * 0.26) | 0},${(cg * 0.26) | 0},${(cb * 0.26) | 0})`;
+            gx.fillRect(lx - shinW / 2 + phase * bw * 0.03, shinY, shinW, shinH);
+            gx.fillStyle = `rgb(${(22 * shade) | 0},${(23 * shade) | 0},${(28 * shade) | 0})`;
+            gx.fillRect(lx - bootW / 2 + phase * bw * 0.04, shinY + shinH - 1, bootW, bootH);
+          };
+          drawLeg(-1, stepL);
+          drawLeg(1, stepR);
+
+          gx.fillStyle = `rgb(${cr},${cg},${cb})`;
+          gx.beginPath();
+          gx.moveTo(centerX - shoulderW * 0.5 + spineTilt * bh * 0.2, shoulderY);
+          gx.lineTo(centerX + shoulderW * 0.5 + spineTilt * bh * 0.2, shoulderY);
+          gx.lineTo(centerX + hipW * 0.5, pelvisY + bh * 0.1);
+          gx.lineTo(centerX - hipW * 0.5, pelvisY + bh * 0.1);
+          gx.closePath();
+          gx.fill();
+
+          gx.fillStyle = `rgb(${(cr * 0.55) | 0},${(cg * 0.55) | 0},${(cb * 0.55) | 0})`;
+          gx.fillRect(centerX - torsoW * 0.3 + spineTilt * bh * 0.12, shoulderY + bh * 0.05, torsoW * 0.6, bh * 0.2);
+          gx.fillStyle = "#ffb3a5";
+          gx.fillRect(centerX - torsoW * 0.28 + spineTilt * bh * 0.12, shoulderY + bh * 0.17, torsoW * 0.56, bh * 0.07);
+          gx.fillStyle = `rgba(255,255,255,${(0.05 + shade * 0.09).toFixed(3)})`;
+          gx.fillRect(centerX - torsoW * 0.42, shoulderY + bh * 0.03, torsoW * 0.84, Math.max(1, bh * 0.02));
+          gx.fillStyle = `rgba(45,13,13,${(0.2 + combat * 0.2).toFixed(3)})`;
+          gx.fillRect(centerX - torsoW * 0.12, shoulderY + bh * 0.11, torsoW * 0.24, bh * 0.16);
+          if (combat > 0.08) {
+            gx.fillStyle = `rgba(18,22,30,${(0.22 + combat * 0.24).toFixed(3)})`;
+            gx.fillRect(centerX - torsoW * 0.44, shoulderY + bh * 0.03, torsoW * 0.88, bh * 0.13);
+          }
+
+          const leftArmSwing = stepR * bw * (0.08 + sprint * 0.04);
+          const rightArmSwing = stepL * bw * (0.08 + sprint * 0.04);
+          const armY = shoulderY + bh * 0.05;
+          gx.fillStyle = `rgb(${(30 * shade) | 0},${(31 * shade) | 0},${(37 * shade) | 0})`;
+          gx.fillRect(centerX - shoulderW * 0.53 + leftArmSwing, armY + Math.max(0, -stepL) * bh * 0.05, bw * 0.18, bh * (0.42 - sprint * 0.06));
+          gx.fillRect(centerX + shoulderW * 0.35 + rightArmSwing, armY + Math.max(0, -stepR) * bh * 0.05, bw * 0.18, bh * (0.42 - sprint * 0.06));
+
+          const headX = centerX - headW * 0.5 + side * headW * 0.06 + sprint * bw * 0.03;
+          const headY = neckY - headH * 0.82 + aimPose * sz * 0.012 + kick * sz * 0.01;
+          gx.fillStyle = `rgb(${(228 * shade) | 0},${(206 * shade) | 0},${(182 * shade) | 0})`;
+          gx.fillRect(headX, headY, headW, headH);
+          gx.fillStyle = `rgb(${(34 * shade) | 0},${(35 * shade) | 0},${(42 * shade) | 0})`;
+          gx.fillRect(headX - headW * 0.1, headY - headH * 0.1, headW * 1.2, headH * 0.24);
+          if (front > -0.35) {
+            gx.fillStyle = "#ffdeda";
+            gx.fillRect(headX + headW * 0.3, headY + headH * 0.32, headW * 0.4, headH * 0.08);
+          } else {
+            gx.fillStyle = `rgba(10,12,18,${(0.35 + Math.abs(front) * 0.2).toFixed(3)})`;
+            gx.fillRect(headX + headW * 0.2, headY + headH * 0.3, headW * 0.6, headH * 0.12);
+          }
+
+          const gunX = centerX + bw * (0.1 + front * 0.03 + aimPose * 0.06 + sprint * 0.04) - kick * bw * 0.07;
+          const gunY = shoulderY + bh * (0.2 - aimPose * 0.11 - sprint * 0.05) + Math.max(0, -stepR) * bh * 0.04;
+          const gunLen = bw * (0.86 + aimPose * 0.22);
+          const gunH = bh * (0.074 + combat * 0.03);
+          const gunRot = side * 0.18 - sprint * 0.24 + aimPose * 0.06 + lean * 0.08;
+          gx.save();
+          gx.translate(gunX, gunY);
+          gx.rotate(gunRot);
+          gx.fillStyle = `rgb(${(18 * shade) | 0},${(21 * shade) | 0},${(27 * shade) | 0})`;
+          gx.fillRect(0, 0, gunLen, gunH);
+          gx.fillStyle = `rgb(${(74 * shade) | 0},${(80 * shade) | 0},${(90 * shade) | 0})`;
+          gx.fillRect(gunLen * 0.25, -gunH * 0.5, gunLen * 0.28, gunH * 0.5);
+          gx.fillStyle = `rgb(${(34 * shade) | 0},${(37 * shade) | 0},${(45 * shade) | 0})`;
+          gx.fillRect(gunLen * 0.52, gunH * 0.15, gunLen * 0.17, gunH * 0.9);
+          gx.fillStyle = `rgba(255,255,255,${(0.08 + aimPose * 0.2).toFixed(3)})`;
+          gx.fillRect(gunLen * 0.11, gunH * 0.16, gunLen * 0.24, gunH * 0.18);
+          if (s.b.shotFx > 0) {
+            gx.fillStyle = "#ffe39b";
+            gx.fillRect(gunLen * 0.98, gunH * 0.5, sz * 0.09, sz * 0.09);
+          }
+          gx.restore();
+
+          if (s.b.state === "flank" || s.b.state === "hunt") {
+            gx.fillStyle = "rgba(255,180,180,0.8)";
+            gx.fillRect(centerX - bw * 0.04, headY - sz * 0.08, bw * 0.08, sz * 0.05);
+          }
+          if (s.b.isVip) {
+            gx.fillStyle = "rgba(255,218,122,0.92)";
+            gx.fillRect(centerX - bw * 0.05, headY - sz * 0.12, bw * 0.1, sz * 0.06);
+            gx.fillStyle = "rgba(255,245,201,0.95)";
+            gx.fillRect(centerX - bw * 0.015, headY - sz * 0.15, bw * 0.03, sz * 0.12);
+          }
+
+          const top = headY - sz * 0.02;
+          const hp = clamp(s.b.hp / s.b.maxHp, 0, 1);
+          gx.fillStyle = "rgba(0,0,0,0.5)";
+          gx.fillRect(sx - sz * 0.24, top, sz * 0.48, 2);
+          gx.fillStyle = s.b.isVip ? "#ffd97d" : s.b.team === "blue" ? "#7fc1ff" : "#ff7f7f";
+          gx.fillRect(sx - sz * 0.24, top, sz * 0.48 * hp, 2);
+        }
+
+        const project = (wx, wy, z = 0.5) => {
+          const dx = wx - player.x;
+          const dy = wy - player.y;
+          const depth = Math.cos(player.a) * dx + Math.sin(player.a) * dy;
+          if (depth <= 0.06 || depth > MAXD) return null;
+          const side = -Math.sin(player.a) * dx + Math.cos(player.a) * dy;
+          const sx = RW * 0.5 + (side / depth) * (RW / (2 * Math.tan(vfov / 2)));
+          if (sx < -16 || sx > RW + 16) return null;
+          const sy = RH * 0.5 + camDrop + ((0.5 - z) / depth) * RH;
+          return { sx, sy, depth };
+        };
+
+        for (const t of S.tracers) {
+          const a = project(t.x1, t.y1, 0.5);
+          const b = project(t.x2, t.y2, 0.5);
+          if (!a || !b) continue;
+          const life = clamp(t.life / 0.1, 0, 1);
+          const cold = t.team === "red" ? [255, 126, 126] : [135, 224, 255];
+          gx.strokeStyle = `rgba(${cold[0]},${cold[1]},${cold[2]},${(0.16 + life * 0.68).toFixed(3)})`;
+          gx.lineWidth = clamp(2.6 / (a.depth + 0.5), 0.65, 1.9);
+          gx.beginPath();
+          gx.moveTo(a.sx, a.sy);
+          gx.lineTo(b.sx, b.sy);
+          gx.stroke();
+
+          gx.strokeStyle = `rgba(255,246,220,${(life * 0.76).toFixed(3)})`;
+          gx.lineWidth = clamp(1.4 / (a.depth + 0.5), 0.45, 1.2);
+          gx.beginPath();
+          gx.moveTo(a.sx, a.sy);
+          gx.lineTo(b.sx, b.sy);
+          gx.stroke();
+        }
+
+        for (const p of S.sparks) {
+          const q = project(p.x, p.y, 0.5);
+          if (!q) continue;
+          const life = clamp(p.life / 0.16, 0, 1);
+          const cold = p.team === "red" ? [255, 144, 131] : [151, 231, 255];
+          const r = clamp((RH / q.depth) * p.size * (0.25 + life * 1.65), 0.75, 6.2);
+          gx.fillStyle = `rgba(${cold[0]},${cold[1]},${cold[2]},${(life * 0.72).toFixed(3)})`;
+          gx.beginPath();
+          gx.arc(q.sx, q.sy, r, 0, TAU);
+          gx.fill();
+        }
+
+        const hazeStrength = 0.08 + (1 - day) * 0.05;
+        const atmos = gx.createLinearGradient(0, RH * 0.2, 0, RH);
+        atmos.addColorStop(0, `rgba(186,214,242,${(hazeStrength * 0.24).toFixed(3)})`);
+        atmos.addColorStop(0.45, `rgba(102,126,151,${(hazeStrength * 0.18).toFixed(3)})`);
+        atmos.addColorStop(1, "rgba(14,20,29,0)");
+        gx.fillStyle = atmos;
+        gx.fillRect(0, 0, RW, RH);
+
+        const walk = (keys.KeyW || keys.KeyA || keys.KeyS || keys.KeyD) && !player.cover;
+        const sway = 1 - ads * 0.84;
+        const moveSpeed = Math.hypot(player.vx, player.vy);
+        const bobAmp = clamp(moveSpeed / 3.8, 0, 1) * (1 - ads * 0.7) * (1 - coverBlend * 0.82);
+        const bobX = Math.sin(S.elapsed * (8 + moveSpeed * 1.25)) * (1 + bobAmp * 2.2) * sway;
+        const bobY = Math.cos(S.elapsed * (16 + moveSpeed * 2)) * (0.7 + bobAmp * 1.45) * sway;
+        const idleBreath = clamp(1 - moveSpeed / 2.8, 0, 1) * (1 - ads * 0.55);
+        const breath = (Math.sin(S.elapsed * 1.9) + Math.cos(S.elapsed * 1.07) * 0.65) * idleBreath;
+        const recoilKick = player.recoil * lerp(8.4, 4.8, ads);
+        const jitter = Math.sin(S.elapsed * 74) * player.recoil * 0.72;
+        const sightLift = ads * 21;
+        const sprint = player.sprintBlend;
+
+        const localStrafe = -Math.sin(player.a) * player.vx + Math.cos(player.a) * player.vy;
+        const localFwd = Math.cos(player.a) * player.vx + Math.sin(player.a) * player.vy;
+        const turnNorm = clamp(player.turnVel / 9.2, -1, 1);
+        const targetLagX = -turnNorm * 7 + localStrafe * 0.5;
+        const targetLagY = -Math.abs(turnNorm) * 1.7 - localFwd * 0.1;
+        const targetLagR = -turnNorm * 0.11 + localStrafe * 0.018;
+        player.weaponLagX = lerp(player.weaponLagX, targetLagX, clamp(0.2 + bobAmp * 0.1, 0, 1));
+        player.weaponLagY = lerp(player.weaponLagY, targetLagY, clamp(0.18 + bobAmp * 0.08, 0, 1));
+        player.weaponLagR = lerp(player.weaponLagR, targetLagR, clamp(0.24 + bobAmp * 0.1, 0, 1));
+
+        const wx = RW * 0.5 + bobX * 0.55 + sprint * 2 - ads * 1.5 - player.recoil * 0.6 + jitter * 0.1 + player.weaponLagX * 0.42 + breath * 0.28;
+        const wy = RH - 14 + bobY + recoilKick * 0.88 - sightLift * 1.12 + sprint * 9 + player.weaponLagY * 0.42 + coverBlend * 7.5 + breath * 0.72;
+        const wRot = player.weaponLagR * 0.42 + Math.sin(S.elapsed * 7.1) * 0.006 * sway + sprint * 0.018 - ads * 0.008;
+
+        gx.save();
+        gx.translate(wx, wy);
+        gx.rotate(wRot);
+
+        // Arma centrada al frente en estilo voxel.
+        const baseX = -29;
+        const baseY = -2;
+        const baseW = 58;
+        const baseH = 22;
+        const upperX = -22;
+        const upperY = -14;
+        const upperW = 44;
+        const upperH = 10;
+        const coreX = -18;
+        const coreY = -34;
+        const coreW = 36;
+        const coreH = 20;
+        const barrelX = -7;
+        const barrelY = -78 - player.recoil * 1.4;
+        const barrelW = 14;
+        const barrelH = 44 + ads * 6;
+        const muzzleX = -6;
+        const muzzleY = barrelY - 6;
+        const muzzleW = 12;
+        const muzzleH = 6;
+
+        gx.fillStyle = "#d0c18a";
+        gx.fillRect(baseX, baseY, baseW, baseH);
+        gx.fillStyle = "#bfb27f";
+        gx.fillRect(baseX, baseY + baseH - 6, baseW, 6);
+        gx.fillStyle = "#e2d4a0";
+        gx.fillRect(baseX + 2, baseY + 2, baseW - 4, 2);
+
+        gx.fillStyle = "#25242a";
+        gx.fillRect(upperX, upperY, upperW, upperH);
+        gx.fillStyle = "#313039";
+        gx.fillRect(upperX + 2, upperY + 1, upperW - 4, 2);
+
+        gx.fillStyle = "#c8ba87";
+        gx.fillRect(coreX, coreY, coreW, coreH);
+        gx.fillStyle = "#b7a979";
+        gx.fillRect(coreX, coreY + coreH - 5, coreW, 5);
+        gx.fillStyle = "#292a31";
+        gx.fillRect(coreX + 3, coreY + 4, coreW - 6, 3);
+
+        gx.fillStyle = "#22222a";
+        gx.fillRect(barrelX, barrelY, barrelW, barrelH);
+        gx.fillStyle = "#3a3a45";
+        gx.fillRect(barrelX + 2, barrelY + 2, barrelW - 4, barrelH - 4);
+        gx.fillStyle = "#16161b";
+        gx.fillRect(muzzleX, muzzleY, muzzleW, muzzleH);
+
+        // Miras cuadradas centradas.
+        gx.fillStyle = "#202028";
+        gx.fillRect(-13, -41, 4, 11);
+        gx.fillRect(9, -41, 4, 11);
+        gx.fillRect(-2, -90, 4, 10);
+        gx.fillStyle = "#4a4a57";
+        gx.fillRect(-12, -40, 2, 1);
+        gx.fillRect(10, -40, 2, 1);
+        gx.fillRect(-1, -89, 2, 1);
+
+        // Ranuras/puerto para look pixelado.
+        gx.fillStyle = "#2b2c34";
+        gx.fillRect(-20, -8, 40, 3);
+        gx.fillStyle = "#a89d73";
+        gx.fillRect(-20, 4, 15, 5);
+        gx.fillRect(5, 4, 15, 5);
+
+        if (ads > 0.08) {
+          const a = ads;
+          gx.fillStyle = `rgba(16,16,20,${(0.44 + a * 0.38).toFixed(3)})`;
+          gx.fillRect(-10, -54, 20, 8);
+          gx.fillStyle = `rgba(160,160,176,${(0.2 + a * 0.46).toFixed(3)})`;
+          gx.fillRect(-4, -52, 8, 2);
+        }
+
+        if (S.muzzle > 0) {
+          const p = clamp(S.muzzle * 1.75, 0, 1);
+          const fx = 0;
+          const fy = muzzleY + 1;
+          gx.fillStyle = `rgba(255,236,169,${(p * 0.88).toFixed(3)})`;
+          gx.beginPath();
+          gx.arc(fx, fy, 3 + p * 10, 0, TAU);
+          gx.fill();
+          gx.fillStyle = "#ffe6a9";
+          gx.fillRect(fx - 1, fy - 1, 3, 3);
+
+          for (let i = 0; i < 6; i += 1) {
+            const drift = i / 6;
+            const sx = fx + Math.sin(S.elapsed * 16 + i * 1.7) * (1.2 + i * 0.9);
+            const sy = fy - 4 - i * 3 - p * 6;
+            const sr = 1.2 + i * 1.25 + p * 2.4;
+            gx.fillStyle = `rgba(220,220,220,${(0.12 * (1 - drift) * p).toFixed(3)})`;
+            gx.beginPath();
+            gx.arc(sx, sy, sr, 0, TAU);
+            gx.fill();
+          }
+        }
+
+        const heat = clamp(player.recoil * 0.85 + S.muzzle * 1.9, 0, 1);
+        if (heat > 0.05) {
+          gx.fillStyle = `rgba(255,170,118,${(heat * 0.18).toFixed(3)})`;
+          gx.fillRect(-5, barrelY + 6, 10, barrelH - 10);
+        }
+
+        gx.restore();
+
+        if (player.reload > 0) {
+          const p = 1 - player.reload / 1.15;
+          gx.fillStyle = "rgba(0,0,0,0.52)";
+          gx.fillRect(RW / 2 - 38, RH - 16, 76, 7);
+          gx.fillStyle = "#8fe6b4";
+          gx.fillRect(RW / 2 - 37, RH - 15, 74 * p, 5);
+        }
+
+        if (player.fireCd > 0.11) {
+          gx.fillStyle = "#ffd79c";
+          gx.fillRect(RW / 2 - 3, RH - 59, 6, 6);
+        }
+
+        cx.clearRect(0, 0, W, H);
+        disableSmoothing(cx);
+        cx.drawImage(low, 0, 0, W, H);
+
+        const mx = W * 0.5;
+        const my = H * 0.5;
+        const hipSpread = 8 + (walk ? 6 : 0) + player.recoil * 24 + (player.reload > 0 ? 4 : 0);
+        const adsSpread = 2 + player.recoil * 8 + (player.reload > 0 ? 2 : 0);
+        const spread = lerp(hipSpread, adsSpread, ads);
+
+        cx.fillStyle = `rgba(255,255,255,${(0.78 - ads * 0.3).toFixed(3)})`;
+        cx.fillRect(mx - 1, my - spread - 7, 2, 7);
+        cx.fillRect(mx - 1, my + spread, 2, 7);
+        cx.fillRect(mx - spread - 7, my - 1, 7, 2);
+        cx.fillRect(mx + spread, my - 1, 7, 2);
+
+        if (ads > 0.08) {
+          cx.strokeStyle = `rgba(180,224,255,${(ads * 0.55).toFixed(3)})`;
+          cx.lineWidth = 1.4;
+          cx.beginPath();
+          cx.arc(mx, my, 10 + (1 - ads) * 7, 0, TAU);
+          cx.stroke();
+        }
+
+        if (S.hitFx > 0) {
+          const h = 8 + S.hitFx * 8;
+          cx.strokeStyle = `rgba(255,225,180,${(S.hitFx * 0.9).toFixed(3)})`;
+          cx.lineWidth = 2;
+          cx.beginPath();
+          cx.moveTo(mx - h, my - h);
+          cx.lineTo(mx - h * 0.42, my - h * 0.42);
+          cx.moveTo(mx + h, my - h);
+          cx.lineTo(mx + h * 0.42, my - h * 0.42);
+          cx.moveTo(mx - h, my + h);
+          cx.lineTo(mx - h * 0.42, my + h * 0.42);
+          cx.moveTo(mx + h, my + h);
+          cx.lineTo(mx + h * 0.42, my + h * 0.42);
+          cx.stroke();
+        }
+
+        cx.fillStyle = "rgba(255,203,153,0.92)";
+        cx.fillRect(mx - 1.5, my - 1.5, 3, 3);
+
+        if (coverBlend > 0.06) {
+          const leftShade = cx.createLinearGradient(0, 0, W * 0.2, 0);
+          leftShade.addColorStop(0, `rgba(0,0,0,${(0.2 + coverBlend * 0.22).toFixed(3)})`);
+          leftShade.addColorStop(1, "rgba(0,0,0,0)");
+          cx.fillStyle = leftShade;
+          cx.fillRect(0, 0, W * 0.2, H);
+
+          const rightShade = cx.createLinearGradient(W, 0, W * 0.8, 0);
+          rightShade.addColorStop(0, `rgba(0,0,0,${(0.2 + coverBlend * 0.22).toFixed(3)})`);
+          rightShade.addColorStop(1, "rgba(0,0,0,0)");
+          cx.fillStyle = rightShade;
+          cx.fillRect(W * 0.8, 0, W * 0.2, H);
+
+          cx.textAlign = "center";
+          cx.font = "15px 'Press Start 2P', monospace";
+          cx.fillStyle = `rgba(198,236,255,${(0.52 + coverBlend * 0.42).toFixed(3)})`;
+          cx.fillText("CUBIERTO", W * 0.5, H - 34);
+          const peek = clamp(player.coverPeek || 0, 0, 1);
+          cx.fillStyle = "rgba(18,26,34,0.72)";
+          cx.fillRect(W * 0.5 - 44, H - 28, 88, 5);
+          cx.fillStyle = "rgba(151,226,255,0.92)";
+          cx.fillRect(W * 0.5 - 43, H - 27, 86 * peek, 3);
+          if (peek < 0.18) {
+            cx.font = "12px 'VT323', monospace";
+            cx.fillStyle = "rgba(198,236,255,0.82)";
+            cx.fillText("CLICK DERECHO PARA ASOMAR", W * 0.5, H - 18);
+          } else {
+            cx.font = "12px 'VT323', monospace";
+            cx.fillStyle = "rgba(198,236,255,0.82)";
+            cx.fillText("ASOMADO", W * 0.5, H - 18);
+          }
+        }
+
+        for (let i = 0; i < 34; i += 1) {
+          const speed = 10 + (i % 5) * 5;
+          const pxDust = (i * 61 + (S.elapsed * speed) % (W + 42)) - 21;
+          const pyDust = ((i * 43) % H) + Math.sin(S.elapsed * 0.7 + i) * 6;
+          const alpha = 0.045 + ((i % 3) * 0.015);
+          cx.fillStyle = `rgba(232,220,204,${(alpha * (1 - ads * 0.45)).toFixed(3)})`;
+          cx.fillRect(pxDust, pyDust, 1 + (i % 2), 1 + ((i + 1) % 2));
+        }
+
+        const rush = clamp(player.sprintBlend * 0.92 + moveSpeed / 7.5, 0, 1);
+        if (rush > 0.08) {
+          const tunnel = cx.createRadialGradient(W * 0.5, H * 0.54, W * 0.24, W * 0.5, H * 0.54, W * 0.82);
+          tunnel.addColorStop(0, "rgba(0,0,0,0)");
+          tunnel.addColorStop(1, `rgba(0,0,0,${(rush * 0.26).toFixed(3)})`);
+          cx.fillStyle = tunnel;
+          cx.fillRect(0, 0, W, H);
+
+          for (let i = 0; i < 28; i += 1) {
+            const lane = (i / 27 - 0.5) * W * 0.92;
+            const y1 = H * 0.56 + (i % 4) * 3;
+            const y2 = H + 14;
+            const x1 = W * 0.5 + lane * 0.12;
+            const x2 = W * 0.5 + lane;
+            cx.strokeStyle = `rgba(255,244,225,${(rush * 0.09).toFixed(3)})`;
+            cx.lineWidth = 1;
+            cx.beginPath();
+            cx.moveTo(x1, y1);
+            cx.lineTo(x2, y2);
+            cx.stroke();
+          }
+        }
+
+        const size = W < 980 ? 180 : 220;
+        const x0 = W - size - 16;
+        const y0 = 16;
+        const half = size * 0.5;
+        const zoom = 16;
+        const worldRange = half / zoom + 1.5;
+        const cxMap = x0 + half;
+        const cyMap = y0 + half;
+
+        const toMiniX = (wx) => cxMap + (wx - player.x) * zoom;
+        const toMiniY = (wy) => cyMap + (wy - player.y) * zoom;
+
+        cx.save();
+        cx.textAlign = "left";
+        cx.fillStyle = "rgba(4, 10, 22, 0.86)";
+        cx.fillRect(x0 - 3, y0 - 3, size + 6, size + 6);
+        cx.fillStyle = "rgba(7, 16, 32, 0.95)";
+        cx.fillRect(x0, y0, size, size);
+        cx.strokeStyle = "rgba(138,247,255,0.9)";
+        cx.lineWidth = 2.5;
+        cx.strokeRect(x0, y0, size, size);
+        cx.font = "12px 'Press Start 2P', monospace";
+        cx.fillStyle = "rgba(225, 245, 255, 0.9)";
+        cx.fillText("MAPA", x0 + 8, y0 + 15);
+
+        cx.beginPath();
+        cx.rect(x0, y0, size, size);
+        cx.clip();
+
+        const minGX = Math.max(0, Math.floor(player.x - worldRange));
+        const maxGX = Math.min(MW - 1, Math.ceil(player.x + worldRange));
+        const minGY = Math.max(0, Math.floor(player.y - worldRange));
+        const maxGY = Math.min(MH - 1, Math.ceil(player.y + worldRange));
+
+        for (let gy = minGY; gy <= maxGY; gy += 1) {
+          for (let gxCell = minGX; gxCell <= maxGX; gxCell += 1) {
+            const left = toMiniX(gxCell);
+            const top = toMiniY(gy);
+            const v = map[gy][gxCell];
+
+            cx.strokeStyle = "rgba(116, 146, 174, 0.16)";
+            cx.lineWidth = 1;
+            cx.strokeRect(left, top, zoom, zoom);
+
+            if (!v) continue;
+            if (v === 1) cx.fillStyle = "rgba(150, 186, 220, 0.82)";
+            if (v === 2) cx.fillStyle = "rgba(214, 156, 128, 0.86)";
+            if (v === 3) cx.fillStyle = "rgba(156, 196, 142, 0.84)";
+            cx.fillRect(left, top, zoom, zoom);
+          }
+        }
+
+        for (const b of S.bots) {
+          if (!b.alive) continue;
+          const bx = toMiniX(b.x);
+          const by = toMiniY(b.y);
+          if (bx < x0 - 5 || by < y0 - 5 || bx > x0 + size + 5 || by > y0 + size + 5) continue;
+          const mark = b.isVip
+            ? "#f2c75d"
+            : S.gameMode === "ffa"
+              ? "#ff4c4c"
+              : b.team === "blue"
+                ? "#58aaff"
+                : "#ff4c4c";
+          cx.beginPath();
+          cx.fillStyle = mark;
+          cx.arc(bx, by, b.isVip ? 3.5 : 3.1, 0, TAU);
+          cx.fill();
+          cx.strokeStyle = "rgba(0,0,0,0.6)";
+          cx.lineWidth = 1;
+          cx.stroke();
+          if (b.isVip) {
+            const outer = 6.6;
+            const inner = 2.8;
+            cx.beginPath();
+            for (let i = 0; i < 10; i += 1) {
+              const a = -Math.PI / 2 + (i * Math.PI) / 5;
+              const rr = i % 2 === 0 ? outer : inner;
+              const px = bx + Math.cos(a) * rr;
+              const py = by + Math.sin(a) * rr;
+              if (i === 0) cx.moveTo(px, py);
+              else cx.lineTo(px, py);
+            }
+            cx.closePath();
+            cx.fillStyle = "rgba(255,223,124,0.95)";
+            cx.fill();
+            cx.strokeStyle = "rgba(73,51,16,0.85)";
+            cx.lineWidth = 1;
+            cx.stroke();
+          }
+        }
+
+        // El jugador siempre aparece centrado para que el minimapa se lea mejor.
+        cx.strokeStyle = "rgba(255, 238, 163, 0.35)";
+        cx.lineWidth = 1;
+        cx.beginPath();
+        cx.arc(cxMap, cyMap, 24, player.a - vfov * 0.5, player.a + vfov * 0.5);
+        cx.stroke();
+
+        cx.fillStyle = "#ffee8a";
+        cx.beginPath();
+        cx.moveTo(cxMap + Math.cos(player.a) * 9, cyMap + Math.sin(player.a) * 9);
+        cx.lineTo(cxMap + Math.cos(player.a + 2.45) * 6, cyMap + Math.sin(player.a + 2.45) * 6);
+        cx.lineTo(cxMap + Math.cos(player.a - 2.45) * 6, cyMap + Math.sin(player.a - 2.45) * 6);
+        cx.closePath();
+        cx.fill();
+        cx.strokeStyle = "rgba(0,0,0,0.72)";
+        cx.lineWidth = 1.2;
+        cx.stroke();
+
+        cx.restore();
+
+        const grade = cx.createLinearGradient(0, 0, 0, H);
+        grade.addColorStop(0, "rgba(146,184,255,0.08)");
+        grade.addColorStop(0.5, "rgba(255,224,172,0.04)");
+        grade.addColorStop(1, "rgba(0,0,0,0.1)");
+        cx.fillStyle = grade;
+        cx.fillRect(0, 0, W, H);
+
+        for (let y = 0; y < H; y += 3) {
+          cx.fillStyle = "rgba(0,0,0,0.06)";
+          cx.fillRect(0, y, W, 1);
+        }
+
+        const grain = 0.03 + (1 - day) * 0.02;
+        for (let i = 0; i < 170; i += 1) {
+          const nx = (((Math.sin(S.elapsed * 93 + i * 12.9898) + 1) * 0.5) * W) | 0;
+          const ny = (((Math.cos(S.elapsed * 87 + i * 78.233) + 1) * 0.5) * H) | 0;
+          const a = (0.016 + (i % 4) * 0.004) * grain;
+          cx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
+          cx.fillRect(nx, ny, 1, 1);
+        }
+
+        const vignette = cx.createRadialGradient(W * 0.5, H * 0.5, W * 0.18, W * 0.5, H * 0.5, W * 0.76);
+        vignette.addColorStop(0, "rgba(0,0,0,0)");
+        vignette.addColorStop(1, "rgba(0,0,0,0.38)");
+        cx.fillStyle = vignette;
+        cx.fillRect(0, 0, W, H);
+
+        if (S.muzzle > 0) {
+          const g = cx.createRadialGradient(W * 0.5, H * 0.68, 4, W * 0.5, H * 0.68, W * 0.28);
+          g.addColorStop(0, `rgba(255,226,170,${(S.muzzle * 0.38).toFixed(3)})`);
+          g.addColorStop(1, "rgba(255,226,170,0)");
+          cx.fillStyle = g;
+          cx.fillRect(0, 0, W, H);
+        }
+
+        if (S.flash > 0) {
+          cx.fillStyle = `rgba(255,35,35,${(S.flash * 0.35).toFixed(3)})`;
+          cx.fillRect(0, 0, W, H);
+        }
+
+        if (player.alive) {
+          const hpRatio = clamp(player.hp / Math.max(1, player.maxHp), 0, 1);
+          if (hpRatio < 0.42) {
+            const pulse = (Math.sin(S.elapsed * 8.4) + 1) * 0.5;
+            const inten = (0.42 - hpRatio) / 0.42;
+            const damageVign = cx.createRadialGradient(W * 0.5, H * 0.54, W * 0.22, W * 0.5, H * 0.54, W * 0.84);
+            damageVign.addColorStop(0, "rgba(130,0,0,0)");
+            damageVign.addColorStop(1, `rgba(130,0,0,${(0.12 + inten * 0.28 + pulse * 0.08).toFixed(3)})`);
+            cx.fillStyle = damageVign;
+            cx.fillRect(0, 0, W, H);
+          }
+        }
+
+        if (!player.alive && S.mode === "play") {
+          cx.fillStyle = "rgba(0,0,0,0.5)";
+          cx.fillRect(0, 0, W, H);
+          cx.fillStyle = "#ffb0b0";
+          cx.font = "32px 'Press Start 2P', monospace";
+          cx.textAlign = "center";
+          cx.fillText(`REAPARECIENDO ${Math.max(0, Math.ceil(player.respawn))}`, W / 2, H / 2);
+        }
+      }
+
+      function hud() {
+        const p = presets[S.diff];
+        el.hp.textContent = `${Math.max(0, Math.ceil(player.hp))}`;
+        let ammo = `${player.clip}/${player.clipSize}`;
+        if (player.reload > 0) ammo += " REC";
+        el.ammo.textContent = ammo;
+        if (S.gameMode === "ffa") {
+          el.score.textContent = `TU ${player.kills} | LIDER ${leaderKills()}`;
+        } else if (S.gameMode === "teams") {
+          el.score.textContent = `AZUL ${S.teamScores.blue} | ROJO ${S.teamScores.red}`;
+        } else {
+          const vip = getVipBot();
+          const vipStat = vip && vip.alive ? `VIP ${Math.max(0, Math.ceil(vip.hp))}` : "VIP CAIDO";
+          el.score.textContent = `${vipStat} | AZ ${S.teamScores.blue} RO ${S.teamScores.red}`;
+        }
+        if (el.modeHud) el.modeHud.textContent = modeLabel();
+        el.dif.textContent = p ? p.label : "---";
+        el.kd.textContent = `${player.kills}/${player.deaths}`;
+        const t = Math.max(0, Math.floor(S.time));
+        el.time.textContent = `${String((t / 60) | 0).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+        const power = Math.round(((S.memory.aim + S.memory.agg + S.memory.strafe + S.memory.react) / 4) * 100);
+        el.ai.textContent = `${power}%`;
+        el.feed.innerHTML = S.feed.slice(0, 4).map((m) => `<div style="opacity:${clamp(m.t / 4, 0.2, 1).toFixed(2)}">${m.msg}</div>`).join("");
+      }
+
+      function saveMemory() {
+        try { localStorage.setItem("retro_ai_memory_v2", JSON.stringify(S.memory)); } catch {}
+      }
+
+      let last = performance.now();
+      function loop(now) {
+        const dt = Math.min(0.034, (now - last) / 1000);
+        last = now;
+
+        update(dt);
+        render();
+        hud();
+
+        requestAnimationFrame(loop);
+      }
+    })();
+  </script>
 </body>
 </html>
