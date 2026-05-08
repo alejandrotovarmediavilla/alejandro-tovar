@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Retro Team Battle 3D</title>
   <style>
-    @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap  ");
+    @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap");
     :root {
       --line: #8bf7ff;
       --bg1: #091426;
@@ -32,7 +32,7 @@
       border: 3px solid var(--line);
       border-radius: 14px;
       background: linear-gradient(165deg, rgba(10, 20, 40, 0.9), rgba(7, 14, 27, 0.95));
-      box-shadow: 0 0 0 2px rgba(255, 225, 137, 0.2), 0 22px 40px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 0 0 2px rgba(255, 225, 137, 0.2), 0 22px 40px rgba(0, 0, 0, 0.45), inset 0 0 60px rgba(139, 247, 255, 0.08);
       padding: 10px;
       position: relative;
     }
@@ -42,6 +42,7 @@
       border-radius: 10px;
       overflow: hidden;
       background: #050912;
+      box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.6);
     }
     canvas {
       width: 100%;
@@ -68,12 +69,13 @@
       justify-content: space-between;
     }
     .box {
-      background: var(--hud);
+      background: linear-gradient(135deg, rgba(8, 16, 31, 0.9), rgba(15, 32, 58, 0.85));
       border: 2px solid rgba(139, 247, 255, 0.45);
       border-radius: 8px;
       min-width: 110px;
       padding: 5px 7px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 0 15px rgba(139, 247, 255, 0.1);
+      backdrop-filter: blur(4px);
     }
     .box b {
       display: block;
@@ -81,16 +83,18 @@
       font-size: 9px;
       line-height: 1.3;
       margin-bottom: 2px;
+      text-shadow: 0 0 8px rgba(139, 247, 255, 0.6);
     }
     .box span {
       display: block;
       font-size: clamp(22px, 2.1vw, 30px);
       line-height: 0.95;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
     }
     #feed {
       align-self: end;
       justify-self: start;
-      background: rgba(9, 15, 27, 0.7);
+      background: linear-gradient(90deg, rgba(9, 15, 27, 0.85), rgba(18, 28, 48, 0.75));
       border: 2px solid rgba(255, 255, 255, 0.15);
       border-radius: 8px;
       min-height: 60px;
@@ -100,24 +104,51 @@
       line-height: 1.03;
       color: #ffe6a6;
       overflow: hidden;
+      box-shadow: 0 0 20px rgba(255, 230, 166, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(3px);
     }
     .overlay {
       position: absolute;
       inset: 0;
       display: grid;
       place-items: center;
-      background: linear-gradient(180deg, rgba(4, 7, 12, 0.6), rgba(3, 6, 10, 0.84));
+      background: linear-gradient(180deg, rgba(4, 7, 12, 0.75), rgba(3, 6, 10, 0.92));
       z-index: 10;
       padding: 14px;
+    }
+    .overlay::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: 
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.1) 2px, rgba(0, 0, 0, 0.1) 4px);
+      pointer-events: none;
+      opacity: 0.3;
     }
     .overlay.hidden { display: none; }
     .card {
       width: min(840px, 100%);
       border: 3px solid rgba(139, 247, 255, 0.7);
       border-radius: 12px;
-      background: linear-gradient(160deg, rgba(10, 20, 40, 0.95), rgba(7, 13, 24, 0.97));
+      background: linear-gradient(160deg, rgba(10, 20, 40, 0.98), rgba(7, 13, 24, 0.99));
       padding: 14px;
-      box-shadow: 0 16px 35px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 16px 35px rgba(0, 0, 0, 0.6), inset 0 0 60px rgba(139, 247, 255, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(139, 247, 255, 0.03) 0%, transparent 70%);
+      animation: pulse 4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.1); opacity: 0.8; }
     }
     h1, h2 {
       margin: 0;
@@ -125,12 +156,18 @@
       font-size: clamp(15px, 2.2vw, 25px);
       line-height: 1.35;
       color: #fff7d1;
+      text-shadow: 0 0 20px rgba(255, 247, 209, 0.6), 0 0 40px rgba(139, 247, 255, 0.3);
+      position: relative;
+      z-index: 1;
     }
     .sub {
       margin: 8px 0 0;
       font-size: clamp(23px, 2.7vw, 33px);
       color: #d7ecff;
       line-height: 1.08;
+      text-shadow: 0 0 15px rgba(215, 236, 255, 0.4);
+      position: relative;
+      z-index: 1;
     }
     .grid {
       margin-top: 12px;
@@ -150,16 +187,33 @@
       line-height: 1.2;
       padding: 9px 8px;
       background: linear-gradient(155deg, #1a3a73, #0f2449);
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .modeBtn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.1) 50%, transparent 60%);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+    .modeBtn:hover::before {
+      transform: translateX(100%);
     }
     .modeBtn small {
       margin-top: 5px;
       font-size: clamp(18px, 2vw, 24px);
+      position: relative;
+      z-index: 1;
     }
     .modeBtn.active {
       border-color: rgba(255, 207, 99, 0.86);
       background: linear-gradient(155deg, #614013, #36240b);
       color: #fff3d0;
       filter: brightness(1.08);
+      box-shadow: 0 0 20px rgba(255, 207, 99, 0.4);
     }
     button {
       border: 2px solid rgba(139, 247, 255, 0.6);
@@ -172,25 +226,45 @@
       text-align: left;
       padding: 11px;
       cursor: pointer;
-      transition: transform 120ms ease, filter 120ms ease;
+      transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
     }
-    button:hover { transform: translateY(-1px); filter: brightness(1.1); }
+    button::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.15) 50%, transparent 60%);
+      transform: translateX(-100%);
+      transition: transform 0.5s ease;
+    }
+    button:hover::before {
+      transform: translateX(100%);
+    }
+    button:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 0 25px rgba(139, 247, 255, 0.3); }
     button small {
       display: block;
       margin-top: 7px;
       font-family: "VT323", monospace;
       font-size: clamp(21px, 2.3vw, 28px);
       line-height: 1.05;
+      position: relative;
+      z-index: 1;
     }
     .hot {
       border-color: rgba(255, 90, 90, 0.72);
       background: linear-gradient(150deg, #611d24, #310f14);
+      box-shadow: 0 0 20px rgba(255, 90, 90, 0.3);
     }
     .info {
       margin-top: 11px;
       font-size: clamp(20px, 2.2vw, 29px);
       line-height: 1.12;
       color: #c5e3ff;
+      text-shadow: 0 0 10px rgba(197, 227, 255, 0.3);
+      position: relative;
+      z-index: 1;
     }
     .row { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
     #retry { min-width: 200px; text-align: center; }
@@ -420,6 +494,11 @@
       };
 
       const wallColor = { 1:[82,137,155], 2:[125,86,72], 3:[104,128,84] };
+      const wallTextures = {
+        1: { type: "metal", pattern: "grid", accent: [120, 180, 200], dark: [50, 90, 110] },
+        2: { type: "brick", pattern: "bricks", accent: [160, 120, 90], dark: [80, 60, 45] },
+        3: { type: "tech", pattern: "panels", accent: [140, 170, 110], dark: [70, 90, 55] }
+      };
       const roleRange = { assault: 4.8, flanker: 5.7, anchor: 6.6, hunter: 4.3 };
       let botSeed = 1;
       let roleCycle = 0;
@@ -2009,11 +2088,30 @@
         disableSmoothing(gx);
 
         const sky = gx.createLinearGradient(0, 0, 0, RH / 2);
-        sky.addColorStop(0, S.diff === "extrema" ? "#101a36" : "#4d73bb");
-        sky.addColorStop(0.55, S.diff === "extrema" ? "#2d2f51" : "#5c77ad");
-        sky.addColorStop(1, S.diff === "extrema" ? "#4f3437" : "#7f5e74");
+        if (S.diff === "extrema") {
+          sky.addColorStop(0, "#0a0f1e");
+          sky.addColorStop(0.4, "#1a1528");
+          sky.addColorStop(0.7, "#2d1f2a");
+          sky.addColorStop(1, "#3d2a2e");
+        } else {
+          sky.addColorStop(0, "#1a3a6e");
+          sky.addColorStop(0.5, "#3a5a9e");
+          sky.addColorStop(0.8, "#5a7abe");
+          sky.addColorStop(1, "#6a8ace");
+        }
         gx.fillStyle = sky;
         gx.fillRect(0, 0, RW, RH / 2);
+
+        // Estrellas en modo extrema o noche
+        if (S.diff === "extrema" || day < 0.25) {
+          for (let i = 0; i < 50; i++) {
+            const starX = ((i * 137.5) % RW);
+            const starY = ((i * 73.3) % (RH * 0.4));
+            const twinkle = 0.3 + Math.sin(S.elapsed * 3 + i) * 0.2;
+            gx.fillStyle = `rgba(255, 255, 255, ${twinkle * 0.8})`;
+            gx.fillRect(starX, starY, 1, 1);
+          }
+        }
 
         const sunX = RW * (0.22 + day * 0.56);
         const sunY = RH * (0.12 + (1 - day) * 0.09);
@@ -2079,12 +2177,14 @@
         gx.fillRect(0, RH * 0.42, RW, RH * 0.28);
 
         const floor = gx.createLinearGradient(0, RH / 2, 0, RH);
-        floor.addColorStop(0, "#5a4431");
-        floor.addColorStop(0.52, "#2f2116");
-        floor.addColorStop(1, "#17100b");
+        floor.addColorStop(0, "#4a3826");
+        floor.addColorStop(0.3, "#3a2c1e");
+        floor.addColorStop(0.6, "#2a1f15");
+        floor.addColorStop(1, "#1a120a");
         gx.fillStyle = floor;
         gx.fillRect(0, RH / 2, RW, RH / 2);
 
+        // Patrón de cuadrícula sutil en el suelo
         for (let y = RH / 2; y < RH; y += 1) {
           const depth = (y - RH / 2) / (RH / 2);
           const dark = 0.04 + depth * 0.26;
@@ -2098,6 +2198,7 @@
             gx.fillRect(0, y, RW, 1);
           }
 
+          // Líneas de cuadrícula en perspectiva
           if (((y + ((S.elapsed * 8) | 0)) % 13) === 0) {
             const line = clamp((0.05 - depth * 0.03), 0.007, 0.05);
             gx.fillStyle = `rgba(158,118,89,${line.toFixed(3)})`;
@@ -2105,6 +2206,7 @@
           }
         }
 
+        // Puntos de textura tipo grava/rugosidad
         for (let y = (RH / 2) | 0; y < RH; y += 2) {
           const depth = (y - RH / 2) / (RH / 2);
           const density = clamp(0.28 - depth * 0.22, 0.05, 0.28);
@@ -2140,6 +2242,7 @@
           const hgt = Math.min(RH * 1.2, RH / d);
           const top = ((RH - hgt) / 2 + camDrop) | 0;
           const base = wallColor[h.t] || wallColor[1];
+          const textureData = wallTextures[h.t] || wallTextures[1];
           const sh = 1 / (1 + d * 0.14);
 
           const fx = h.x - Math.floor(h.x);
@@ -2147,7 +2250,32 @@
           const edgeX = Math.min(fx, 1 - fx);
           const edgeY = Math.min(fy, 1 - fy);
           const sideShade = edgeX < edgeY ? 0.84 : 1;
-          const texture = Math.sin(h.x * 10.2 + h.y * 7.5) * 0.07 + Math.cos(h.x * 13.5 - h.y * 8.1) * 0.05;
+          
+          // Textura procedural mejorada según tipo de pared
+          let texture = 0;
+          if (textureData.pattern === "grid") {
+            texture = Math.sin(h.x * 10.2 + h.y * 7.5) * 0.07 + Math.cos(h.x * 13.5 - h.y * 8.1) * 0.05;
+            const gridX = Math.abs(Math.sin(h.x * 20)) > 0.95 ? 0.08 : 0;
+            const gridY = Math.abs(Math.sin(h.y * 20)) > 0.95 ? 0.08 : 0;
+            texture += gridX + gridY;
+          } else if (textureData.pattern === "bricks") {
+            const brickRow = Math.floor(h.y * 4) % 2;
+            const brickX = (h.x + (brickRow ? 0.125 : 0)) * 8;
+            const inBrick = (Math.sin(brickX * Math.PI) > 0.3) ? 0.06 : -0.04;
+            const mortarX = Math.abs((h.x * 8) % 1 - 0.5) < 0.04 ? -0.12 : 0;
+            const mortarY = Math.abs((h.y * 4) % 1 - 0.5) < 0.04 ? -0.12 : 0;
+            texture = inBrick + mortarX + mortarY;
+          } else if (textureData.pattern === "panels") {
+            const panelX = Math.floor(h.x * 3) / 3;
+            const panelY = Math.floor(h.y * 2) / 2;
+            const panelEdgeX = Math.abs(h.x - panelX - 0.166) < 0.03 ? 0.1 : 0;
+            const panelEdgeY = Math.abs(h.y - panelY - 0.25) < 0.03 ? 0.1 : 0;
+            const panelDetail = Math.sin(h.x * 50 + h.y * 30) * 0.02;
+            texture = panelEdgeX + panelEdgeY + panelDetail;
+          } else {
+            texture = Math.sin(h.x * 10.2 + h.y * 7.5) * 0.07 + Math.cos(h.x * 13.5 - h.y * 8.1) * 0.05;
+          }
+          
           const rough = (Math.sin((h.x + h.y) * 34.2) + Math.cos((h.x - h.y) * 28.6)) * 0.03;
           const seam = (((((h.x + h.y) * 6) | 0) & 1) ? 0.03 : -0.02) * clamp(1 - d / 12, 0, 1);
           let nx = 0;
@@ -2333,15 +2461,52 @@
           gx.save();
           gx.translate(gunX, gunY);
           gx.rotate(gunRot);
-          gx.fillStyle = `rgb(${(18 * shade) | 0},${(21 * shade) | 0},${(27 * shade) | 0})`;
+          
+          // Cuerpo principal del arma con gradiente metálico
+          const gunGrad = gx.createLinearGradient(0, -gunH/2, 0, gunH/2);
+          gunGrad.addColorStop(0, `rgb(${(45 * shade) | 0},${(50 * shade) | 0},${(60 * shade) | 0})`);
+          gunGrad.addColorStop(0.3, `rgb(${(28 * shade) | 0},${(32 * shade) | 0},${(40 * shade) | 0})`);
+          gunGrad.addColorStop(0.7, `rgb(${(18 * shade) | 0},${(21 * shade) | 0},${(27 * shade) | 0})`);
+          gunGrad.addColorStop(1, `rgb(${(35 * shade) | 0},${(40 * shade) | 0},${(50 * shade) | 0})`);
+          gx.fillStyle = gunGrad;
           gx.fillRect(0, 0, gunLen, gunH);
-          gx.fillStyle = `rgb(${(74 * shade) | 0},${(80 * shade) | 0},${(90 * shade) | 0})`;
+          
+          // Cañón/refuerzo superior
+          const barrelGrad = gx.createLinearGradient(gunLen * 0.25, -gunH * 0.5, gunLen * 0.53, -gunH * 0.2);
+          barrelGrad.addColorStop(0, `rgb(${(90 * shade) | 0},${(98 * shade) | 0},${(110 * shade) | 0})`);
+          barrelGrad.addColorStop(0.5, `rgb(${(65 * shade) | 0},${(72 * shade) | 0},${(82 * shade) | 0})`);
+          barrelGrad.addColorStop(1, `rgb(${(80 * shade) | 0},${(88 * shade) | 0},${(98 * shade) | 0})`);
+          gx.fillStyle = barrelGrad;
           gx.fillRect(gunLen * 0.25, -gunH * 0.5, gunLen * 0.28, gunH * 0.5);
-          gx.fillStyle = `rgb(${(34 * shade) | 0},${(37 * shade) | 0},${(45 * shade) | 0})`;
+          
+          // Mango/cargador
+          const magGrad = gx.createLinearGradient(gunLen * 0.52, gunH * 0.15, gunLen * 0.69, gunH * 1.05);
+          magGrad.addColorStop(0, `rgb(${(42 * shade) | 0},${(46 * shade) | 0},${(55 * shade) | 0})`);
+          magGrad.addColorStop(0.4, `rgb(${(30 * shade) | 0},${(34 * shade) | 0},${(42 * shade) | 0})`);
+          magGrad.addColorStop(1, `rgb(${(38 * shade) | 0},${(42 * shade) | 0},${(50 * shade) | 0})`);
+          gx.fillStyle = magGrad;
           gx.fillRect(gunLen * 0.52, gunH * 0.15, gunLen * 0.17, gunH * 0.9);
+          
+          // Detalles brillantes/reflectantes
           gx.fillStyle = `rgba(255,255,255,${(0.08 + aimPose * 0.2).toFixed(3)})`;
           gx.fillRect(gunLen * 0.11, gunH * 0.16, gunLen * 0.24, gunH * 0.18);
+          
+          // Línea decorativa tipo riel
+          gx.fillStyle = `rgba(${(100 * shade) | 0},${(120 * shade) | 0},${(140 * shade) | 0}, 0.6)`;
+          gx.fillRect(gunLen * 0.1, gunH * 0.42, gunLen * 0.6, gunH * 0.08);
+          
+          // Efecto de disparo
           if (s.b.shotFx > 0) {
+            const muzzleGrad = gx.createRadialGradient(gunLen, gunH * 0.5, 0, gunLen, gunH * 0.5, sz * 0.15);
+            muzzleGrad.addColorStop(0, "rgba(255, 255, 200, 0.95)");
+            muzzleGrad.addColorStop(0.3, "rgba(255, 200, 100, 0.7)");
+            muzzleGrad.addColorStop(0.6, "rgba(255, 150, 50, 0.3)");
+            muzzleGrad.addColorStop(1, "rgba(255, 100, 0, 0)");
+            gx.fillStyle = muzzleGrad;
+            gx.beginPath();
+            gx.arc(gunLen, gunH * 0.5, sz * 0.15, 0, TAU);
+            gx.fill();
+            
             gx.fillStyle = "#ffe39b";
             gx.fillRect(gunLen * 0.98, gunH * 0.5, sz * 0.09, sz * 0.09);
           }
@@ -2472,38 +2637,62 @@
         const muzzleW = 12;
         const muzzleH = 6;
 
-        gx.fillStyle = "#d0c18a";
+        // Base del arma con gradiente metálico
+        const baseGrad = gx.createLinearGradient(baseX, baseY, baseX, baseY + baseH);
+        baseGrad.addColorStop(0, "#dccfa0");
+        baseGrad.addColorStop(0.5, "#c8ba87");
+        baseGrad.addColorStop(1, "#b0a370");
+        gx.fillStyle = baseGrad;
         gx.fillRect(baseX, baseY, baseW, baseH);
-        gx.fillStyle = "#bfb27f";
+        gx.fillStyle = "#a89a68";
         gx.fillRect(baseX, baseY + baseH - 6, baseW, 6);
-        gx.fillStyle = "#e2d4a0";
+        gx.fillStyle = "#ece0b8";
         gx.fillRect(baseX + 2, baseY + 2, baseW - 4, 2);
 
-        gx.fillStyle = "#25242a";
+        // Parte superior con acabado táctico
+        const upperGrad = gx.createLinearGradient(upperX, upperY, upperX, upperY + upperH);
+        upperGrad.addColorStop(0, "#2a2930");
+        upperGrad.addColorStop(0.5, "#25242a");
+        upperGrad.addColorStop(1, "#1f1e24");
+        gx.fillStyle = upperGrad;
         gx.fillRect(upperX, upperY, upperW, upperH);
-        gx.fillStyle = "#313039";
+        gx.fillStyle = "#3a3942";
         gx.fillRect(upperX + 2, upperY + 1, upperW - 4, 2);
 
-        gx.fillStyle = "#c8ba87";
+        // Núcleo central
+        const coreGrad = gx.createLinearGradient(coreX, coreY, coreX, coreY + coreH);
+        coreGrad.addColorStop(0, "#d4c895");
+        coreGrad.addColorStop(1, "#b7a979");
+        gx.fillStyle = coreGrad;
         gx.fillRect(coreX, coreY, coreW, coreH);
-        gx.fillStyle = "#b7a979";
+        gx.fillStyle = "#a89a68";
         gx.fillRect(coreX, coreY + coreH - 5, coreW, 5);
         gx.fillStyle = "#292a31";
         gx.fillRect(coreX + 3, coreY + 4, coreW - 6, 3);
 
-        gx.fillStyle = "#22222a";
+        // Cañón con detalles metálicos
+        const barrelGrad = gx.createLinearGradient(barrelX, barrelY, barrelX + barrelW, barrelY);
+        barrelGrad.addColorStop(0, "#1a1a20");
+        barrelGrad.addColorStop(0.3, "#2a2a32");
+        barrelGrad.addColorStop(0.7, "#2a2a32");
+        barrelGrad.addColorStop(1, "#1a1a20");
+        gx.fillStyle = barrelGrad;
         gx.fillRect(barrelX, barrelY, barrelW, barrelH);
-        gx.fillStyle = "#3a3a45";
-        gx.fillRect(barrelX + 2, barrelY + 2, barrelW - 4, barrelH - 4);
-        gx.fillStyle = "#16161b";
+        gx.fillStyle = "#42424d";
+        gx.fillRect(barrelX + 3, barrelY + 2, barrelW - 6, barrelH - 4);
+        gx.fillStyle = "#121216";
         gx.fillRect(muzzleX, muzzleY, muzzleW, muzzleH);
+        
+        // Riel táctico decorativo
+        gx.fillStyle = "rgba(60, 60, 70, 0.7)";
+        gx.fillRect(barrelX + 2, barrelY + barrelH - 8, barrelW - 4, 4);
 
         // Miras cuadradas centradas.
         gx.fillStyle = "#202028";
         gx.fillRect(-13, -41, 4, 11);
         gx.fillRect(9, -41, 4, 11);
         gx.fillRect(-2, -90, 4, 10);
-        gx.fillStyle = "#4a4a57";
+        gx.fillStyle = "#5a5a67";
         gx.fillRect(-12, -40, 2, 1);
         gx.fillRect(10, -40, 2, 1);
         gx.fillRect(-1, -89, 2, 1);
@@ -2511,7 +2700,7 @@
         // Ranuras/puerto para look pixelado.
         gx.fillStyle = "#2b2c34";
         gx.fillRect(-20, -8, 40, 3);
-        gx.fillStyle = "#a89d73";
+        gx.fillStyle = "#b8ab83";
         gx.fillRect(-20, 4, 15, 5);
         gx.fillRect(5, 4, 15, 5);
 
@@ -2519,7 +2708,7 @@
           const a = ads;
           gx.fillStyle = `rgba(16,16,20,${(0.44 + a * 0.38).toFixed(3)})`;
           gx.fillRect(-10, -54, 20, 8);
-          gx.fillStyle = `rgba(160,160,176,${(0.2 + a * 0.46).toFixed(3)})`;
+          gx.fillStyle = `rgba(180,180,196,${(0.2 + a * 0.46).toFixed(3)})`;
           gx.fillRect(-4, -52, 8, 2);
         }
 
@@ -2527,19 +2716,32 @@
           const p = clamp(S.muzzle * 1.75, 0, 1);
           const fx = 0;
           const fy = muzzleY + 1;
-          gx.fillStyle = `rgba(255,236,169,${(p * 0.88).toFixed(3)})`;
+          
+          // Flash principal con gradiente radial
+          const flashGrad = gx.createRadialGradient(fx, fy, 0, fx, fy, 25);
+          flashGrad.addColorStop(0, "rgba(255, 255, 220, 0.95)");
+          flashGrad.addColorStop(0.2, "rgba(255, 230, 150, 0.8)");
+          flashGrad.addColorStop(0.5, "rgba(255, 180, 80, 0.4)");
+          flashGrad.addColorStop(1, "rgba(255, 100, 0, 0)");
+          gx.fillStyle = flashGrad;
+          gx.beginPath();
+          gx.arc(fx, fy, 25 * p, 0, TAU);
+          gx.fill();
+          
+          gx.fillStyle = `rgba(255,240,180,${(p * 0.95).toFixed(3)})`;
           gx.beginPath();
           gx.arc(fx, fy, 3 + p * 10, 0, TAU);
           gx.fill();
-          gx.fillStyle = "#ffe6a9";
+          gx.fillStyle = "#fff0c0";
           gx.fillRect(fx - 1, fy - 1, 3, 3);
 
-          for (let i = 0; i < 6; i += 1) {
-            const drift = i / 6;
+          // Chispas y partículas del disparo
+          for (let i = 0; i < 8; i += 1) {
+            const drift = i / 8;
             const sx = fx + Math.sin(S.elapsed * 16 + i * 1.7) * (1.2 + i * 0.9);
             const sy = fy - 4 - i * 3 - p * 6;
             const sr = 1.2 + i * 1.25 + p * 2.4;
-            gx.fillStyle = `rgba(220,220,220,${(0.12 * (1 - drift) * p).toFixed(3)})`;
+            gx.fillStyle = `rgba(255,240,200,${(0.15 * (1 - drift) * p).toFixed(3)})`;
             gx.beginPath();
             gx.arc(sx, sy, sr, 0, TAU);
             gx.fill();
@@ -2548,7 +2750,11 @@
 
         const heat = clamp(player.recoil * 0.85 + S.muzzle * 1.9, 0, 1);
         if (heat > 0.05) {
-          gx.fillStyle = `rgba(255,170,118,${(heat * 0.18).toFixed(3)})`;
+          const heatGrad = gx.createLinearGradient(-5, barrelY + 6, 5, barrelY + barrelH - 6);
+          heatGrad.addColorStop(0, `rgba(255,200,130,${(heat * 0.25).toFixed(3)})`);
+          heatGrad.addColorStop(0.5, `rgba(255,150,80,${(heat * 0.18).toFixed(3)})`);
+          heatGrad.addColorStop(1, "rgba(255,100,50,0)");
+          gx.fillStyle = heatGrad;
           gx.fillRect(-5, barrelY + 6, 10, barrelH - 10);
         }
 
